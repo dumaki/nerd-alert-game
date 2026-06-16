@@ -1,10 +1,12 @@
 {
   "name": "nerdalert-game",
   "version": "1.0.0",
-  "description": "",
-  "main": "DirectionInput.js",
+  "description": "Nerd Alert! — a browser RPG based on the cartoon.",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "repository": {
     "type": "git",
@@ -15,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/dumaki/NerdALertGame/issues"
   },
-  "homepage": "https://github.com/dumaki/NerdALertGame#readme"
+  "homepage": "https://github.com/dumaki/NerdALertGame#readme",
+  "devDependencies": {
+    "vite": "^8.0.16"
+  }
 }
