@@ -1,8 +1,8 @@
 // TODO: theme — Move names, descriptions and flavor text are cooking-themed
-// placeholders from the original tutorial (e.g. "Tomato Squeeze", "Parmesan").
-// Rewrite these as Nerd Alert attacks/argument moves. The mechanics (damage,
-// status, recover) and the status keys "saucy"/"clumsy" are intentionally left
-// intact so battles keep working until you redesign them.
+// placeholders from the original tutorial (e.g. "Whomp!", "Parmesan"). Rewrite
+// these as Nerd Alert attacks (the battles will be random NPCs at the IT help
+// desk asking for help). Only the basic damage move and an HP-recover item remain
+// — design the real move set when wiring up the battle system.
 export const Actions = {
   damage1: {
     name: "Whomp!",

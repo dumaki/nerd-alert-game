@@ -107,12 +107,6 @@
   color: white;
   margin: 0;
 }
-.Combatant_status[data-status="saucy"] {
-  color: red;
-}
-.Combatant_status[data-status="clumsy"] {
-  background: #582a79;
-}
 
 .Character {
   position: absolute;
