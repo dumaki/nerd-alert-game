@@ -17,5 +17,7 @@
 .Letterbox_bar--bottom { bottom: 0; }
 
 .Letterbox--on .Letterbox_bar {
-  height: 16px;
+  /* Tall enough that the top bar fully covers the character HUD (which bottoms
+     out ~34px down), for a more cinematic cutscene frame. */
+  height: 36px;
 }
