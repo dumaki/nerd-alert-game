@@ -6,6 +6,7 @@ import { OverworldMaps } from "./OverworldMap.js";
 import { playerState } from "./State/PlayerState.js";
 import { Enemies } from "./Content/enemies.js";
 import { Battle } from "./Battle/Battle.js";
+import { TitleCard } from "./TitleCard.js";
 
 export class OverworldEvent {
   constructor({ map, event}) {
@@ -66,6 +67,16 @@ export class OverworldEvent {
       onComplete: () => resolve()
     })
     message.init( document.querySelector(".game-container") )
+  }
+
+  titleCard(resolve) {
+    const card = new TitleCard({
+      title: this.event.title,
+      subtitle: this.event.subtitle,
+      duration: this.event.duration,
+      onComplete: () => resolve()
+    })
+    card.init( document.querySelector(".game-container") )
   }
 
   changeMap(resolve) {

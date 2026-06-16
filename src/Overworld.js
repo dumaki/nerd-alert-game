@@ -94,5 +94,11 @@ export class Overworld {
    this.directionInput.init();
  
    this.startGameLoop();
+
+   // Episode-style intro. Extend this array with more title cards or an opening
+   // cutscene (textMessage / walk events). The player can skip the card with Enter.
+   this.map.startCutscene([
+     { type: "titleCard", title: "Nerd Alert!", subtitle: "Episode 1: New Guy" },
+   ])
   }
  }

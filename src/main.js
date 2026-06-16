@@ -5,6 +5,7 @@ import "../styles/KeyboardMenu.css";
 import "../styles/TextMessage.css";
 import "../styles/Menus.css";
 import "../styles/SceneTransition.css";
+import "../styles/TitleCard.css";
 import "../styles/Battle.css";
 import "../styles/Combatant.css";
 import "../styles/Team.css";
