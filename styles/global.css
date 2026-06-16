@@ -20,8 +20,10 @@ body {
 }
 
 .game-container {
-  position: relative; 
-  width: 352px;
+  position: relative;
+  /* 264x198 = 4:3 retro playfield. Camera centering derives from these
+     dimensions (utils.cameraOffsetX/Y), so this is the single source of size. */
+  width: 264px;
   height: 198px;
   margin: 0 auto;
   outline: 1px solid #fff;
