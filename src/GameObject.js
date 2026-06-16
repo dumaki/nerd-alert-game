@@ -45,6 +45,12 @@ export class GameObject {
       return;
     }
 
+    //A non-repeating loop that already finished sits at index === length; there's
+    //nothing left to play (and reading behaviorLoop[length] would crash).
+    if (this.behaviorLoopIndex >= this.behaviorLoop.length) {
+      return;
+    }
+
     //Setting up our event with relevant info
     let eventConfig = this.behaviorLoop[this.behaviorLoopIndex];
     eventConfig.who = this.id;

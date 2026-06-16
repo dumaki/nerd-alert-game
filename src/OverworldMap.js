@@ -1287,16 +1287,19 @@ export const OverworldMaps = {
       },
     cutsceneSpaces: {
       // Kenny ends at (17,16) facing down; this is the tile right behind him (17,15).
-      // When Brett steps here, the two walk 22 tiles right together (simultaneously)
-      // toward Bridget's office to meet Toshi. Fires once. (Add neighbouring keys like
-      // (16,15)/(18,15) for a wider trigger; bump "22" toward Bridget at x~54.)
+      // Stepping here plays the cutscene: letterbox in, Brett + Kenny walk 20 tiles
+      // right together (simultaneously) to stop in front of Bridget's office, then
+      // letterbox out. Fires once. (Add neighbouring keys like (16,15)/(18,15) for a
+      // wider trigger; change the 20 to walk them further right.)
       [utils.asGridCoord(17, 15)]: [{
         disqualify: ["MET_AT_BRIDGET"],
         events: [
+          { type: "letterbox", on: true },
           { type: "parallel", events: [
-            Array.from({ length: 22 }, () => ({ who: "hero", type: "walk", direction: "right" })),
-            Array.from({ length: 22 }, () => ({ who: "kenny", type: "walk", direction: "right" })),
+            Array.from({ length: 20 }, () => ({ who: "hero", type: "walk", direction: "right" })),
+            Array.from({ length: 20 }, () => ({ who: "kenny", type: "walk", direction: "right" })),
           ]},
+          { type: "letterbox", on: false },
           { type: "addStoryFlag", flag: "MET_AT_BRIDGET" },
         ]
       }],
