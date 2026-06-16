@@ -241,6 +241,20 @@ export const OverworldMaps = {
             ]
           }],
         }),
+        helpDeskCustomer: new Person({
+          // MOCK battle: a coworker asks for IT help, which starts a battle.
+          // Placed near the start for easy testing — relocate to taste.
+          x: utils.withGrid(4),
+          y: utils.withGrid(7),
+          src: "images/characters/people/SecurityGuard.png",
+          behaviorLoop: [{ type: "stand", direction: "down" }],
+          talking: [{
+            events: [
+              { type: "textMessage", text: "Ugh, my monitor's just black! Can you take a look?", faceHero: "helpDeskCustomer" },
+              { type: "battle", enemyId: "frazzled_coworker" },
+            ]
+          }],
+        }),
       },
       walls: {
         //Left-Side of Map

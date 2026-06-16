@@ -40,4 +40,18 @@ export const Enemies = {
         }
     },
 
+    // MOCK help-desk battle: a single coworker who needs help. "characters fight
+    // directly" — one person, no creature roster.
+    "frazzled_coworker": {
+        name: "Frazzled Coworker",
+        src: "images/characters/people/SecurityGuard.png",
+        party: {
+            "a": {
+                characterId: "customer",
+                maxHp: 30,
+                level: 1,
+            },
+        }
+    },
+
 }

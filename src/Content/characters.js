@@ -52,5 +52,15 @@ export const Characters = {
     src: "images/characters/people/kenny.png",
     icon: "images/icons/chill.png",
     actions: [ "damage1" ],
+  },
+  // MOCK help-desk "customer" you battle. TODO: src reuses Brett's battle portrait
+  // as a placeholder — make a small (~27x21) portrait for the real customer art.
+  "customer": {
+    name: "Frazzled Coworker",
+    description: "A coworker who needs IT help.",
+    type: CharacterTypes.chill,
+    src: "images/characters/people/brett001.png",
+    icon: "images/icons/chill.png",
+    actions: [ "damage1" ],
   }
 }
