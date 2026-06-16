@@ -125,7 +125,7 @@ export const OverworldMaps = {
         toshi: new Person({
           x: utils.withGrid(6),
           y: utils.withGrid(4),
-          src: "images/characters/people/toshi.png",
+          src: "images/characters/people/Toshi.png",
           behaviorLoop: [
             { type: "stand",  direction: "down" },
           ],
@@ -146,7 +146,7 @@ export const OverworldMaps = {
         postman: new Person({
           x: utils.withGrid(1),
           y: utils.withGrid(6),
-          src: "images/characters/people/postman.png",
+          src: "images/characters/people/Postman.png",
           behaviorLoop: [
             { type: "stand",  direction: "left" },
           ],
@@ -897,12 +897,12 @@ export const OverworldMaps = {
       toshi: new Person({
         x: utils.withGrid(53),
         y: utils.withGrid(18),
-        src: "images/characters/people/toshi.png",
+        src: "images/characters/people/Toshi.png",
       }),
       bridget: new Person({
         x: utils.withGrid(54),
         y: utils.withGrid(16),
-        src: "images/characters/people/bridget.png",
+        src: "images/characters/people/Bridget.png",
       }),
     },
     walls: {

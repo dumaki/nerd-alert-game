@@ -37,7 +37,7 @@ export class BattleEvent {
       })
       
       //start blinking
-      target.pizzaElement.classList.add("battle-damage-blink");
+      target.characterElement.classList.add("battle-damage-blink");
     }
 
     if (recover) {
@@ -70,7 +70,7 @@ export class BattleEvent {
     this.battle.enemyTeam.update();
 
     //stop blinking
-    target.pizzaElement.classList.remove("battle-damage-blink");
+    target.characterElement.classList.remove("battle-damage-blink");
     resolve();
   }
 

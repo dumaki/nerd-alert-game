@@ -2,7 +2,7 @@ import { utils } from "../utils.js";
 
 export const BattleAnimations = {
   async spin(event, onComplete) {
-    const element = event.caster.pizzaElement;
+    const element = event.caster.characterElement;
     const animationClassName = event.caster.team === "player" ? "battle-spin-right" : "battle-spin-left";
     element.classList.add(animationClassName);
 
@@ -11,7 +11,7 @@ export const BattleAnimations = {
       element.classList.remove(animationClassName);
     }, { once:true });
 
-    //Continue battle cycle right around when the pizzas collide
+    //Continue battle cycle right around when the party collide
     await utils.wait(100);
     onComplete();
   },

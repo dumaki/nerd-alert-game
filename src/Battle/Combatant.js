@@ -49,11 +49,11 @@ export class Combatant {
       <p class="Combatant_status"></p>
     `);
 
-    this.pizzaElement = document.createElement("img");
-    this.pizzaElement.classList.add("Pizza");
-    this.pizzaElement.setAttribute("src", this.src );
-    this.pizzaElement.setAttribute("alt", this.name );
-    this.pizzaElement.setAttribute("data-team", this.team );
+    this.characterElement = document.createElement("img");
+    this.characterElement.classList.add("Character");
+    this.characterElement.setAttribute("src", this.src );
+    this.characterElement.setAttribute("alt", this.name );
+    this.characterElement.setAttribute("data-team", this.team );
 
     this.hpFills = this.hudElement.querySelectorAll(".Combatant_life-container > rect");
     this.xpFills = this.hudElement.querySelectorAll(".Combatant_xp-container > rect");
@@ -65,9 +65,9 @@ export class Combatant {
       this[key] = changes[key]
     });
 
-    //Update active flag to show the correct pizza & hud
+    //Update active flag to show the correct character & hud
     this.hudElement.setAttribute("data-active", this.isActive);
-    this.pizzaElement.setAttribute("data-active", this.isActive);
+    this.characterElement.setAttribute("data-active", this.isActive);
 
     //Update HP & XP percent fills
     this.hpFills.forEach(rect => rect.style.width = `${this.hpPercent}%`)
@@ -127,7 +127,7 @@ export class Combatant {
   init(container) {
     this.createElement();
     container.appendChild(this.hudElement);
-    container.appendChild(this.pizzaElement);
+    container.appendChild(this.characterElement);
     this.update();
   }
 

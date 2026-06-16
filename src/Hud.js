@@ -1,5 +1,5 @@
 import { playerState } from "./State/PlayerState.js";
-import { Pizzas } from "./Content/pizzas.js";
+import { Characters } from "./Content/characters.js";
 import { Combatant } from "./Battle/Combatant.js";
 
 export class Hud {
@@ -9,7 +9,7 @@ export class Hud {
   
     update() {
       this.scoreboards.forEach(s => {
-        s.update(playerState.pizzas[s.id])
+        s.update(playerState.party[s.id])
       })
     }
   
@@ -24,11 +24,11 @@ export class Hud {
       this.element.classList.add("Hud");
   
       playerState.lineup.forEach(key => {
-        const pizza = playerState.pizzas[key];
+        const character = playerState.party[key];
         const scoreboard = new Combatant({
           id: key,
-          ...Pizzas[pizza.pizzaId],
-          ...pizza,
+          ...Characters[character.characterId],
+          ...character,
         }, null)
         scoreboard.createElement();
         this.scoreboards.push(scoreboard);

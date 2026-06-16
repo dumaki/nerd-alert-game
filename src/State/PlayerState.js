@@ -2,9 +2,9 @@ import { utils } from "../utils.js";
 
 class PlayerState {
     constructor() {
-      this.pizzas = {
+      this.party = {
         "p1": {
-          pizzaId: "s001",
+          characterId: "s001",
           hp: 1,
           maxHp: 50,
           xp: 90,
@@ -13,7 +13,7 @@ class PlayerState {
           status: { type: "saucy" },
         },
         "p2": {
-          pizzaId: "v001",
+          characterId: "v001",
           hp: 50,
           maxHp: 50,
           xp: 75,
@@ -22,7 +22,7 @@ class PlayerState {
           status: null,
         },
         "p3": {
-          pizzaId: "f001",
+          characterId: "f001",
           hp: 50,
           maxHp: 50,
           xp: 75,

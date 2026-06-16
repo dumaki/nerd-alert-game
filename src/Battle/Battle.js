@@ -1,6 +1,6 @@
 import { utils } from "../utils.js";
 import { playerState } from "../State/PlayerState.js";
-import { Pizzas } from "../Content/pizzas.js";
+import { Characters } from "../Content/characters.js";
 import { Combatant } from "./Combatant.js";
 import { Team } from "./Team.js";
 import { TurnCycle } from "./TurnCycle.js";
@@ -12,48 +12,8 @@ export class Battle {
     this.enemy = enemy;
     this.onComplete = onComplete;
 
-    this.combatants = {
-      // "player1": new Combatant({
-      //   ...Pizzas.s001,
-      //   team: "player",
-      //   hp: 30,
-      //   maxHp: 50,
-      //   xp: 95,
-      //   maxXp: 100,
-      //   level: 1,
-      //   status: { type: "saucy" },
-      //   isPlayerControlled: true
-      // }, this),
-      // "player2": new Combatant({
-      //   ...Pizzas.s002,
-      //   team: "player",
-      //   hp: 30,
-      //   maxHp: 50,
-      //   xp: 75,
-      //   maxXp: 100,
-      //   level: 1,
-      //   status: null,
-      //   isPlayerControlled: true
-      // }, this),
-      // "enemy1": new Combatant({
-      //   ...Pizzas.v001,
-      //   team: "enemy",
-      //   hp: 1,
-      //   maxHp: 50,
-      //   xp: 20,
-      //   maxXp: 100,
-      //   level: 1,
-      // }, this),
-      // "enemy2": new Combatant({
-      //   ...Pizzas.f001,
-      //   team: "enemy",
-      //   hp: 25,
-      //   maxHp: 50,
-      //   xp: 30,
-      //   maxXp: 100,
-      //   level: 1,
-      // }, this)
-    }
+    // Combatants are added dynamically below from the player's party and the enemy's.
+    this.combatants = {}
 
     this.activeCombatants = {
       player: null, //"player1",
@@ -62,11 +22,11 @@ export class Battle {
 
     //Dynamically add the Player team
     playerState.lineup.forEach(id => {
-      this.addCombatant(id, "player", playerState.pizzas[id])
+      this.addCombatant(id, "player", playerState.party[id])
     });
     //Now the enemy team
-    Object.keys(this.enemy.pizzas).forEach(key => {
-      this.addCombatant("e_"+key, "enemy", this.enemy.pizzas[key])
+    Object.keys(this.enemy.party).forEach(key => {
+      this.addCombatant("e_"+key, "enemy", this.enemy.party[key])
     })
 
 
@@ -87,15 +47,13 @@ export class Battle {
 
   addCombatant(id, team, config) {
       this.combatants[id] = new Combatant({
-        ...Pizzas[config.pizzaId],
+        ...Characters[config.characterId],
         ...config,
         team,
         isPlayerControlled: team === "player"
       }, this)
 
-      //Populate first active pizza
-
-      console.log(this)
+      //Populate first active character
       this.activeCombatants[team] = this.activeCombatants[team] || id
   }
 
@@ -146,14 +104,14 @@ export class Battle {
       onWinner: winner => {
 
         if (winner === "player") {
-          Object.keys(playerState.pizzas).forEach(id => {
-            const playerStatePizza = playerState.pizzas[id];
+          Object.keys(playerState.party).forEach(id => {
+            const playerStateCharacter = playerState.party[id];
             const combatant = this.combatants[id];
             if (combatant) {
-              playerStatePizza.hp = combatant.hp;
-              playerStatePizza.xp = combatant.xp;
-              playerStatePizza.maxXp = combatant.maxXp;
-              playerStatePizza.level = combatant.level;
+              playerStateCharacter.hp = combatant.hp;
+              playerStateCharacter.xp = combatant.xp;
+              playerStateCharacter.maxXp = combatant.maxXp;
+              playerStateCharacter.level = combatant.level;
             }
           })
 

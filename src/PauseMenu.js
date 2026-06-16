@@ -1,5 +1,5 @@
 import { playerState } from "./State/PlayerState.js";
-import { Pizzas } from "./Content/pizzas.js";
+import { Characters } from "./Content/characters.js";
 import { KeyboardMenu } from "./KeyboardMenu.js";
 import { KeyPressListener } from "./KeyPressListener.js";
 import { utils } from "./utils.js";
@@ -13,9 +13,9 @@ export class PauseMenu {
   
       //Case 1: Show the first page of options
       if (pageKey === "root") {
-        const lineupPizzas = playerState.lineup.map(id => {
-          const {pizzaId} = playerState.pizzas[id];
-          const base = Pizzas[pizzaId];
+        const lineupCharacters = playerState.lineup.map(id => {
+          const {characterId} = playerState.party[id];
+          const base = Characters[characterId];
           return {
             label: base.name,
             description: base.description,
@@ -25,7 +25,7 @@ export class PauseMenu {
           }
         })
         return [
-          ...lineupPizzas,
+          ...lineupCharacters,
           {
             label: "Save",
             description: "Save your progress",
@@ -43,12 +43,12 @@ export class PauseMenu {
         ]
       }
   
-      //Case 2: Show the options for just one pizza (by id)
-      const unequipped = Object.keys(playerState.pizzas).filter(id => {
+      //Case 2: Show the options for just one character (by id)
+      const unequipped = Object.keys(playerState.party).filter(id => {
         return playerState.lineup.indexOf(id) === -1;
       }).map(id => {
-        const {pizzaId} = playerState.pizzas[id];
-        const base = Pizzas[pizzaId];
+        const {characterId} = playerState.party[id];
+        const base = Characters[characterId];
         return {
           label: `Swap for ${base.name}`,
           description: base.description,
@@ -63,7 +63,7 @@ export class PauseMenu {
         ...unequipped,
         {
           label: "Move to front",
-          description: "Move this pizza to the front of the list",
+          description: "Move this character to the front of the list",
           handler: () => {
             playerState.moveToFront(pageKey);
             this.keyboardMenu.setOptions( this.getOptions("root") );

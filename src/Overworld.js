@@ -94,13 +94,5 @@ export class Overworld {
    this.directionInput.init();
  
    this.startGameLoop();
- 
- 
-   // this.map.startCutscene([
-   //   { type: "battle", enemyId: "beth" }
-   //   // { type: "changeMap", map: "DemoRoom"}
-   //   // { type: "textMessage", text: "This is the very first message!"}
-   // ])
- 
   }
  }

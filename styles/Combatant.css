@@ -114,25 +114,25 @@
   background: #582a79;
 }
 
-.Pizza {
+.Character {
   position: absolute;
   transform: scale(2);
   transition: opacity 0.4s, transform 0.4s;
-  background: url(images/pizza-shadow.png) no-repeat no-repeat;
+  background: url(images/character-shadow.png) no-repeat no-repeat;
 }
-.Pizza[data-team="player"] {
+.Character[data-team="player"] {
   bottom: 73px;
   left: 51px;
 }
-.Pizza[data-team="enemy"] {
+.Character[data-team="enemy"] {
   top: 47px;
   right: 100px;
 }
-.Pizza[data-active="false"] {
+.Character[data-active="false"] {
   opacity:0;
   transform: translate3d(0,16px,0) scale(2);
 }
-.Pizza[data-active="true"] {
+.Character[data-active="true"] {
   opacity:1;
   transform: translate3d(0,0,0) scale(2);
 }

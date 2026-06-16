@@ -57,9 +57,9 @@ export class SubmissionMenu {
         },
         {
           label: "Swap",
-          description: "Change to another pizza",
+          description: "Change to another character",
           handler: () => { 
-            //See pizza options
+            //See character options
             this.keyboardMenu.setOptions( this.getPages().replacements )
           }
         },

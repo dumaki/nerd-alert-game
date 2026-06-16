@@ -1,15 +1,15 @@
 export const Enemies = {
     "toshi": {
         name: "Toshi",
-        src: "images/characters/people/toshi.png",
-        pizzas: {
+        src: "images/characters/people/Toshi.png",
+        party: {
             "a": {
-                pizzaId: "v001",
+                characterId: "v001",
                 maxHp: 50,
                 level: 1,
             },
             "b": {
-                pizzaId: "s002",
+                characterId: "s002",
                 maxHp: 50,
                 level: 1,
             },
@@ -18,10 +18,10 @@ export const Enemies = {
     "kenny": {
         name: "Kenny",
         src: "images/characters/people/kenny.png",
-        pizzas: {
+        party: {
             "a": {
                 hp: 1,
-                pizzaId: "f001",
+                characterId: "f001",
                 maxHp: 50,
                 level: 1,
             },
@@ -29,11 +29,11 @@ export const Enemies = {
     },
     "postman": {
         name: "Postman",
-        src: "images/characters/people/postman.png",
-        pizzas: {
+        src: "images/characters/people/Postman.png",
+        party: {
             "a": {
                 hp: 1,
-                pizzaId: "f002",
+                characterId: "f001", // TODO: theme — was "f002", which doesn't exist in Characters (would crash the Postman battle). Set to Postman's real fighter.
                 maxHp: 50,
                 level: 1,
             },
