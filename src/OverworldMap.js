@@ -1286,15 +1286,18 @@ export const OverworldMaps = {
         [utils.asGridCoord(42, 12)]:  true,
       },
     cutsceneSpaces: {
-      // Kenny ends at (17,16) facing down; this is the tile right behind him (17,15).
-      // Stepping here plays the cutscene: letterbox in, Brett + Kenny walk 20 tiles
-      // right together (simultaneously) to stop in front of Bridget's office, then
-      // letterbox out. Fires once. (Add neighbouring keys like (16,15)/(18,15) for a
-      // wider trigger; change the 20 to walk them further right.)
-      [utils.asGridCoord(17, 15)]: [{
+      // Kenny stops at (17,16) facing down. The player catches up to him from the
+      // left and lands on (16,16) (Kenny blocks them from going further right), so
+      // the trigger lives there. Cutscene: letterbox in, Brett steps up one row so
+      // the two walk in separate lanes (a follower on the SAME row stutters, because
+      // the engine moves the hero before Kenny each frame), then both walk 20 tiles
+      // right together to stop in front of Bridget's office, then letterbox out.
+      // Fires once.
+      [utils.asGridCoord(16, 16)]: [{
         disqualify: ["MET_AT_BRIDGET"],
         events: [
           { type: "letterbox", on: true },
+          { who: "hero", type: "walk", direction: "up" },
           { type: "parallel", events: [
             Array.from({ length: 20 }, () => ({ who: "hero", type: "walk", direction: "right" })),
             Array.from({ length: 20 }, () => ({ who: "kenny", type: "walk", direction: "right" })),
