@@ -80,12 +80,7 @@ export class OverworldMap {
       return `${object.x},${object.y}` === `${nextCoords.x},${nextCoords.y}`
     });
     if (!this.isCutscenePlaying && match && match.talking.length) {
-
-      const relevantScenario = match.talking.find(scenario => {
-        return (scenario.required || []).every(sf => {
-          return playerState.storyFlags[sf]
-        })
-      })
+      const relevantScenario = this.getRelevantScenario(match.talking);
       relevantScenario && this.startCutscene(relevantScenario.events)
     }
   }
@@ -94,8 +89,26 @@ export class OverworldMap {
     const hero = this.gameObjects["hero"];
     const match = this.cutsceneSpaces[ `${hero.x},${hero.y}` ];
     if (!this.isCutscenePlaying && match) {
-      this.startCutscene( match[0].events )
+      const relevantScenario = this.getRelevantScenario(match);
+      relevantScenario && this.startCutscene(relevantScenario.events)
     }
+  }
+
+  // Choose the first scenario the player currently qualifies for, scanning in order.
+  // A scenario may declare:
+  //   required:   [flags]  — every flag must be SET for it to qualify
+  //   disqualify: [flags]  — if ANY flag is set, it is skipped
+  // To make a trigger fire only once, end its events with
+  //   { type: "addStoryFlag", flag: "SOME_FLAG" }
+  // and give the same scenario `disqualify: ["SOME_FLAG"]`. After it runs once the
+  // flag is set, so it no longer qualifies. List more specific scenarios first; if
+  // none qualify, nothing happens (returns undefined).
+  getRelevantScenario(scenarios) {
+    return scenarios.find(scenario => {
+      const meetsRequired = (scenario.required || []).every(sf => playerState.storyFlags[sf]);
+      const isDisqualified = (scenario.disqualify || []).some(sf => playerState.storyFlags[sf]);
+      return meetsRequired && !isDisqualified;
+    });
   }
 
   addWall(x,y) {
@@ -276,6 +289,7 @@ export const OverworldMaps = {
       },
       cutsceneSpaces: {
         [utils.asGridCoord(3, 9)]: [{
+          disqualify: ["POSTMAN_BLOCKED_EXIT"],
           events: [{
               who: "postman",
               type: "walk",
@@ -311,6 +325,10 @@ export const OverworldMaps = {
               who: "postman",
               type: "walk",
               direction: "right"
+            },
+            {
+              type: "addStoryFlag",
+              flag: "POSTMAN_BLOCKED_EXIT"
             },
           ]
         }],
