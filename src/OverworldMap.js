@@ -827,9 +827,9 @@ export const OverworldMaps = {
           src: "images/characters/people/kenny.png",
         }),
       },
-      cutsceneSpaces: {
-        [utils.asGridCoord(12, 16)]: [{
-          events: [
+      cutsceneOnLoad: [
+            { type: "letterbox", on: true },
+            { who: "hero", type: "walk", direction: "up" },
             { who: "hero", type: "walk", direction: "up" },
             { who: "hero", type: "walk", direction: "up" },
             { who: "hero", type: "walk", direction: "up" },
@@ -893,10 +893,9 @@ export const OverworldMaps = {
             { who: "hero", type: "walk", direction: "down" },
             { who: "hero", type: "walk", direction: "down" },
             { who: "hero", type: "walk", direction: "down" },
+            { type: "letterbox", on: false },
             { type: "changeMap", map: "SeventhFloor"},
-          ]
-        }],
-    }
+      ],
   },
   SeventhFloor: {
     lowerSrc: "images/maps/SeventhFloorLower.png",

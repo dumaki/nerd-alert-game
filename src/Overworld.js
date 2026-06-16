@@ -77,6 +77,13 @@ export class Overworld {
    this.map = new OverworldMap(mapConfig);
    this.map.overworld = this;
    this.map.mountObjects();
+
+   // Fire a cutscene the instant the map mounts (no key press / footstep needed).
+   // Started synchronously so isCutscenePlaying is true before NPC idle loops kick
+   // in, which keeps control until the cutscene finishes (e.g. the elevator scene).
+   if (mapConfig.cutsceneOnLoad) {
+     this.map.startCutscene(mapConfig.cutsceneOnLoad);
+   }
   }
  
   init() {

@@ -1,0 +1,21 @@
+.Letterbox {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.Letterbox_bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  background: #000;
+  transition: height 0.4s ease;
+}
+.Letterbox_bar--top { top: 0; }
+.Letterbox_bar--bottom { bottom: 0; }
+
+.Letterbox--on .Letterbox_bar {
+  height: 16px;
+}

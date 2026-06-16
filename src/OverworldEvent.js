@@ -7,6 +7,7 @@ import { playerState } from "./State/PlayerState.js";
 import { Enemies } from "./Content/enemies.js";
 import { Battle } from "./Battle/Battle.js";
 import { TitleCard } from "./TitleCard.js";
+import { Letterbox } from "./Letterbox.js";
 
 export class OverworldEvent {
   constructor({ map, event}) {
@@ -77,6 +78,19 @@ export class OverworldEvent {
       onComplete: () => resolve()
     })
     card.init( document.querySelector(".game-container") )
+  }
+
+  letterbox(resolve) {
+    const overworld = this.map.overworld;
+    if (!overworld.letterbox) {
+      overworld.letterbox = new Letterbox();
+      overworld.letterbox.init(document.querySelector(".game-container"));
+    }
+    if (this.event.on === false) {
+      overworld.letterbox.hide(resolve);
+    } else {
+      overworld.letterbox.show(resolve);
+    }
   }
 
   changeMap(resolve) {
