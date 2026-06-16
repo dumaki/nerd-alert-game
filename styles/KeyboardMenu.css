@@ -55,8 +55,16 @@
 
 
  /* Battle specific */
+.Battle .DescriptionBox {
+  /* one-line strip pinned to the very bottom; the menu sits above it */
+  height: 19px;
+}
+.Battle .DescriptionBox p {
+  white-space: nowrap;
+  overflow: hidden;
+}
 .Battle .KeyboardMenu {
   right:0;
-  bottom:0;
+  bottom: 19px; /* sit above the DescriptionBox so it no longer covers the text */
   width: 140px;
 }
