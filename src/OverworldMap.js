@@ -914,13 +914,12 @@ export const OverworldMaps = {
         y: utils.withGrid(7),
         src: "images/characters/people/kenny.png",
         // Kenny walks to his spot on his own when the floor loads, WITHOUT freezing
-        // the player (behavior loops run outside cutscenes). 9 down + 10 left of his
-        // start, then stop. NOTE: with start (7,7), "10 left" ends at grid (-3,16),
-        // off the left map edge — adjust the counts or his start to land on-screen.
+        // the player (behavior loops run outside cutscenes): 9 down + 10 right of his
+        // start (7,7) -> ends at grid (17,16), then faces down and stays put.
         behaviorLoopRepeat: false,
         behaviorLoop: [
           ...Array.from({ length: 9 }, () => ({ type: "walk", direction: "down" })),
-          ...Array.from({ length: 10 }, () => ({ type: "walk", direction: "left" })),
+          ...Array.from({ length: 10 }, () => ({ type: "walk", direction: "right" })),
           { type: "stand", direction: "down", time: 400 },
         ],
       }),
@@ -1273,12 +1272,11 @@ export const OverworldMaps = {
         [utils.asGridCoord(42, 12)]:  true,
       },
     cutsceneSpaces: {
-      // When Brett steps onto the tile just behind Kenny, the two of them walk
-      // 22 tiles right together (simultaneously) toward Bridget's office to meet
-      // Toshi. Fires once. TODO: this key assumes Kenny ends at grid (-3,16) per
-      // the literal "10 left" — set it to the tile behind wherever Kenny actually
-      // stops, and tune the "22" to land near Bridget (x ~54).
-      [utils.asGridCoord(-3, 15)]: [{
+      // Kenny ends at (17,16) facing down; this is the tile right behind him (17,15).
+      // When Brett steps here, the two walk 22 tiles right together (simultaneously)
+      // toward Bridget's office to meet Toshi. Fires once. (Add neighbouring keys like
+      // (16,15)/(18,15) for a wider trigger; bump "22" toward Bridget at x~54.)
+      [utils.asGridCoord(17, 15)]: [{
         disqualify: ["MET_AT_BRIDGET"],
         events: [
           { type: "parallel", events: [
