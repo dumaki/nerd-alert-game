@@ -62,14 +62,6 @@ export class PauseMenu {
       return [
         ...unequipped,
         {
-          label: "Move to front",
-          description: "Move this character to the front of the list",
-          handler: () => {
-            playerState.moveToFront(pageKey);
-            this.keyboardMenu.setOptions( this.getOptions("root") );
-          }
-        },
-        {
           label: "Back",
           description: "Back to root menu",
           handler: () => {

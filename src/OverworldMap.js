@@ -885,6 +885,9 @@ export const OverworldMaps = {
             { who: "kenny", type: "walk", direction: "down" },
             { who: "kenny", type: "walk", direction: "down" },
 
+            { type: "textMessage", text: "Kenny has joined the team." },
+            { type: "addToParty", characterId: "kenny" },
+
             { who: "hero", type: "walk", direction: "left" },
             { who: "hero", type: "walk", direction: "down" },
             { who: "hero", type: "walk", direction: "down" },
@@ -910,6 +913,16 @@ export const OverworldMaps = {
         x: utils.withGrid(7),
         y: utils.withGrid(7),
         src: "images/characters/people/kenny.png",
+        // Kenny walks to his spot on his own when the floor loads, WITHOUT freezing
+        // the player (behavior loops run outside cutscenes). 9 down + 10 left of his
+        // start, then stop. NOTE: with start (7,7), "10 left" ends at grid (-3,16),
+        // off the left map edge — adjust the counts or his start to land on-screen.
+        behaviorLoopRepeat: false,
+        behaviorLoop: [
+          ...Array.from({ length: 9 }, () => ({ type: "walk", direction: "down" })),
+          ...Array.from({ length: 10 }, () => ({ type: "walk", direction: "left" })),
+          { type: "stand", direction: "down", time: 400 },
+        ],
       }),
       toshi: new Person({
         x: utils.withGrid(53),
@@ -1257,10 +1270,24 @@ export const OverworldMaps = {
         [utils.asGridCoord(40, 13)]:  true,    
         [utils.asGridCoord(41, 13)]:  true,    
         [utils.asGridCoord(42, 13)]:  true,
-        [utils.asGridCoord(42, 12)]:  true, 
-      }
-    },
+        [utils.asGridCoord(42, 12)]:  true,
+      },
     cutsceneSpaces: {
-
+      // When Brett steps onto the tile just behind Kenny, the two of them walk
+      // 22 tiles right together (simultaneously) toward Bridget's office to meet
+      // Toshi. Fires once. TODO: this key assumes Kenny ends at grid (-3,16) per
+      // the literal "10 left" — set it to the tile behind wherever Kenny actually
+      // stops, and tune the "22" to land near Bridget (x ~54).
+      [utils.asGridCoord(-3, 15)]: [{
+        disqualify: ["MET_AT_BRIDGET"],
+        events: [
+          { type: "parallel", events: [
+            Array.from({ length: 22 }, () => ({ who: "hero", type: "walk", direction: "right" })),
+            Array.from({ length: 22 }, () => ({ who: "kenny", type: "walk", direction: "right" })),
+          ]},
+          { type: "addStoryFlag", flag: "MET_AT_BRIDGET" },
+        ]
+      }],
     },
   }
+}

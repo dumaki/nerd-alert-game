@@ -15,6 +15,10 @@ export class GameObject {
 
     this.behaviorLoop = config.behaviorLoop || [];
     this.behaviorLoopIndex = 0;
+    // When false, the behavior loop plays through once and then stops (the
+    // character stays put). Useful for a one-time scripted walk that should not
+    // freeze the player. Defaults to true (classic looping idle behavior).
+    this.behaviorLoopRepeat = config.behaviorLoopRepeat ?? true;
 
     this.talking = config.talking || [];
 
@@ -52,8 +56,9 @@ export class GameObject {
     //Setting the next event to fire
     this.behaviorLoopIndex += 1;
     if (this.behaviorLoopIndex === this.behaviorLoop.length) {
+      if (!this.behaviorLoopRepeat) { return; }
       this.behaviorLoopIndex = 0;
-    } 
+    }
 
     //Do it again!
     this.doBehaviorEvent(map);

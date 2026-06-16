@@ -93,6 +93,27 @@ export class OverworldEvent {
     }
   }
 
+  addToParty(resolve) {
+    playerState.addToParty(this.event.characterId);
+    resolve();
+  }
+
+  // Run several event sequences at the same time (e.g. two characters walking
+  // together). this.event.events is an array of sequences; each sequence is a
+  // list of events run in order, and the sequences themselves run concurrently.
+  async parallel(resolve) {
+    await Promise.all(
+      this.event.events.map(sequence => this.runSequence(sequence))
+    );
+    resolve();
+  }
+
+  async runSequence(events) {
+    for (const event of events) {
+      await new OverworldEvent({ map: this.map, event }).init();
+    }
+  }
+
   changeMap(resolve) {
 
     const sceneTransition = new SceneTransition();

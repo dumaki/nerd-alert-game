@@ -2,34 +2,18 @@ import { utils } from "../utils.js";
 
 class PlayerState {
     constructor() {
+      // The player's roster. Starts as just Brett; others join via addToParty
+      // (e.g. Kenny at the end of the elevator scene).
       this.party = {
         "p1": {
           characterId: "s001",
-          hp: 1,
+          hp: 50,
           maxHp: 50,
           xp: 90,
           maxXp: 100,
           level: 1,
-          status: { type: "saucy" },
-        },
-        "p2": {
-          characterId: "v001",
-          hp: 50,
-          maxHp: 50,
-          xp: 75,
-          maxXp: 100,
-          level: 1,
           status: null,
         },
-        "p3": {
-          characterId: "f001",
-          hp: 50,
-          maxHp: 50,
-          xp: 75,
-          maxXp: 100,
-          level: 1,
-          status: null,
-        }
       }
       this.lineup = ["p1"];
       this.items = [
@@ -47,12 +31,21 @@ class PlayerState {
       this.lineup[oldIndex] = incomingId;
       utils.emitEvent("LineupChanged");
     }
-  
-    moveToFront(futureFrontId) {
-      this.lineup = this.lineup.filter(id => id !== futureFrontId);
-      this.lineup.unshift(futureFrontId);
-      utils.emitEvent("LineupChanged");
+
+    // Recruit a character into the party (not the active lineup — swap them in
+    // via the pause menu). Keyed by characterId, so recruiting twice is a no-op.
+    addToParty(characterId) {
+      if (this.party[characterId]) { return; }
+      this.party[characterId] = {
+        characterId,
+        hp: 50,
+        maxHp: 50,
+        xp: 0,
+        maxXp: 100,
+        level: 1,
+        status: null,
+      };
     }
-  
+
   }
   export const playerState = new PlayerState();

@@ -19,7 +19,7 @@ export const Characters = {
     type: CharacterTypes.spicy,
     src: "images/characters/people/brett001.png",
     icon: "images/icons/spicy.png",
-    actions: [ "saucyStatus", "clumsyStatus", "damage1" ],
+    actions: [ "damage1" ],
   },
   "s002": {
     name: "Bacon Brigade",
@@ -27,7 +27,7 @@ export const Characters = {
     type: CharacterTypes.spicy,
     src: "images/characters/battlers/s002.png",
     icon: "images/icons/spicy.png",
-    actions: [ "saucyStatus", "clumsyStatus", "damage1" ],
+    actions: [ "damage1" ],
   },
   "v001": {
     name: "Call Me Kale",
@@ -43,6 +43,14 @@ export const Characters = {
     type: CharacterTypes.fungi,
     src: "images/characters/battlers/f001.png",
     icon: "images/icons/fungi.png",
+    actions: [ "damage1" ],
+  },
+  "kenny": {
+    name: "Kenny",
+    description: "Your coworker on the IT help desk.",
+    type: CharacterTypes.chill,
+    src: "images/characters/people/kenny.png",
+    icon: "images/icons/chill.png",
     actions: [ "damage1" ],
   }
 }
