@@ -1,4 +1,4 @@
-import { utils } from "../utils.js";
+import { pickTicket, COUNTER_BASE_CHANCE } from "./ticketBattle.js";
 import { playerState } from "../State/PlayerState.js";
 import { Characters } from "../Content/characters.js";
 import { Combatant } from "./Combatant.js";
@@ -11,6 +11,12 @@ export class Battle {
 
     this.enemy = enemy;
     this.onComplete = onComplete;
+
+    // Help-desk v1: each battle is one randomly-rolled support ticket. counterChance
+    // and askUses are mutable per-battle state read by the move resolver.
+    this.ticket = pickTicket();
+    this.counterChance = COUNTER_BASE_CHANCE;
+    this.askUses = 0;
 
     // Combatants are added dynamically below from the player's party and the enemy's.
     this.combatants = {}
@@ -102,30 +108,10 @@ export class Battle {
         })
       },
       onWinner: winner => {
-
-        if (winner === "player") {
-          Object.keys(playerState.party).forEach(id => {
-            const playerStateCharacter = playerState.party[id];
-            const combatant = this.combatants[id];
-            if (combatant) {
-              playerStateCharacter.hp = combatant.hp;
-              playerStateCharacter.xp = combatant.xp;
-              playerStateCharacter.maxXp = combatant.maxXp;
-              playerStateCharacter.level = combatant.level;
-            }
-          })
-
-          //Get rid of player used items
-          playerState.items = playerState.items.filter(item => {
-            return !this.usedInstanceIds[item.instanceId]
-          })
-
-          //Send signal to update
-          utils.emitEvent("PlayerStateUpdated");
-        }
-
+        // v1: patience resets per battle (no leveling/persistence yet), so we
+        // just tear down and report whether the player fixed the ticket.
         this.element.remove();
-        this.onComplete();
+        this.onComplete(winner === "player");
       }
     })
     this.turnCycle.init();

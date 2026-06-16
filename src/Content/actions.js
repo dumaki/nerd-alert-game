@@ -1,9 +1,25 @@
-// TODO: theme — Move names, descriptions and flavor text are cooking-themed
-// placeholders from the original tutorial (e.g. "Whomp!", "Parmesan"). Rewrite
-// these as Nerd Alert attacks (the battles will be random NPCs at the IT help
-// desk asking for help). Only the basic damage move and an HP-recover item remain
-// — design the real move set when wiring up the battle system.
+// Battle actions. The help-desk v1 moves below are menu metadata only (name +
+// description) — their outcomes are computed dynamically in Battle/ticketBattle.js
+// based on the ticket. damage1 / item_recoverHp are legacy tutorial moves kept for
+// the (currently passive) enemy data and the future items system.
 export const Actions = {
+  smack: {
+    name: "Smack it",
+    description: "Percussive maintenance. Might fix anything.",
+  },
+  checkCords: {
+    name: "Check the cords",
+    description: "Good for monitors, laptops and printers.",
+  },
+  replaceBatteries: {
+    name: "Replace batteries",
+    description: "For wireless mice and keyboards.",
+  },
+  ask: {
+    name: "Ask",
+    description: "\"Have you tried turning it off and on again?\"",
+  },
+
   damage1: {
     name: "Whomp!",
     description: "Pillowy punch of dough",

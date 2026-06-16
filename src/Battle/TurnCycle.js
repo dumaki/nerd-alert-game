@@ -1,160 +1,67 @@
+import { resolveTicketMove } from "./ticketBattle.js";
+
+// Help-desk v1: a player-only loop. The customer never takes a turn of their own
+// — they only counter the player's misses (handled inside resolveTicketMove).
 export class TurnCycle {
   constructor({ battle, onNewEvent, onWinner }) {
     this.battle = battle;
     this.onNewEvent = onNewEvent;
     this.onWinner = onWinner;
-    this.currentTeam = "player"; //or "enemy"
   }
 
   async turn() {
-    //Get the caster
-    const casterId = this.battle.activeCombatants[this.currentTeam];
-    const caster = this.battle.combatants[casterId];
-    const enemyId = this.battle.activeCombatants[caster.team === "player" ? "enemy" : "player"]
-    const enemy = this.battle.combatants[enemyId];
+    const player = this.battle.combatants[this.battle.activeCombatants.player];
+    const customer = this.battle.combatants[this.battle.activeCombatants.enemy];
 
+    // Player chooses an IT move.
     const submission = await this.onNewEvent({
       type: "submissionMenu",
-      caster,
-      enemy
-    })
+      caster: player,
+      enemy: customer,
+    });
 
-    //Stop here if we are replacing this Character
-    if (submission.replacement) {
-      await this.onNewEvent({
-        type: "replace",
-        replacement: submission.replacement
-      })
-      await this.onNewEvent({
-        type: "textMessage",
-        text: `Go get 'em, ${submission.replacement.name}!`
-      })
-      this.nextTurn();
-      return;
+    // Resolve it against the ticket -> a list of textMessage / stateChange events.
+    const events = resolveTicketMove({
+      moveId: submission.action.id,
+      battle: this.battle,
+      player,
+      customer,
+    });
+    for (const event of events) {
+      await this.onNewEvent({ ...event, caster: player });
     }
 
-    if (submission.instanceId) {
-
-      //Add to list to persist to player state later
-      this.battle.usedInstanceIds[submission.instanceId] = true;
-
-      //Removing item from battle state
-      this.battle.items = this.battle.items.filter(i => i.instanceId !== submission.instanceId)
-    }
-
-    const resultingEvents = caster.getReplacedEvents(submission.action.success);
-
-    for (let i=0; i<resultingEvents.length; i++) {
-      const event = {
-        ...resultingEvents[i],
-        submission,
-        action: submission.action,
-        caster,
-        target: submission.target,
-      }
-      await this.onNewEvent(event);
-    }
-
-    //Did the target die?
-    const targetDead = submission.target.hp <= 0;
-    if (targetDead) {
-      await this.onNewEvent({
-        type: "textMessage", text: `${submission.target.name} is ruined!`
-      })
-
-      if (submission.target.team === "enemy") {
-
-        const playerActiveCharacterId = this.battle.activeCombatants.player;
-        const xp = submission.target.giveXp;
-
-        await this.onNewEvent({
-          type: "textMessage",
-          text: `Gained ${xp} XP!`
-        })
-        await this.onNewEvent({
-          type: "giveXp",
-          xp,
-          combatant: this.battle.combatants[playerActiveCharacterId]
-        })
-      }
-    }
-
-    //Do we have a winning team?
+    // Fixed (customer HP 0) -> win. Out of patience (player HP 0) -> lose.
     const winner = this.getWinningTeam();
     if (winner) {
       await this.onNewEvent({
         type: "textMessage",
-        text: "Winner!"
-      })
+        text: winner === "player" ? "Ticket resolved!" : "...you'll have to escalate this one.",
+      });
       this.onWinner(winner);
       return;
     }
 
-    //We have a dead target, but still no winner so bring in a replacement
-    if (targetDead) {
-      const replacement = await this.onNewEvent({
-        type: "replacementMenu",
-        team: submission.target.team
-      })
-      await this.onNewEvent({
-        type: "replace",
-        replacement: replacement
-      })
-      await this.onNewEvent({
-        type: "textMessage",
-        text: `${replacement.name} appears!`
-      })
-    }
-
-    //Check for post events
-    //(Do things AFTER your original turn submission)
-    const postEvents = caster.getPostEvents();
-    for (let i=0; i < postEvents.length; i++ ) {
-      const event = {
-        ...postEvents[i],
-        submission,
-        action: submission.action,
-        caster,
-        target: submission.target, 
-      }
-      await this.onNewEvent(event);
-    }
-
-    //Check for status expire
-    const expiredEvent = caster.decrementStatus();
-    if (expiredEvent) {
-      await this.onNewEvent(expiredEvent)
-    }
-
-    this.nextTurn();
-  }
-
-  nextTurn() {
-    this.currentTeam = this.currentTeam === "player" ? "enemy" : "player";
+    // Straight back to the player — no enemy turn.
     this.turn();
   }
 
   getWinningTeam() {
-    let aliveTeams = {};
+    const alive = {};
     Object.values(this.battle.combatants).forEach(c => {
-      if (c.hp > 0) {
-        aliveTeams[c.team] = true;
-      }
-    })
-    if (!aliveTeams["player"]) {return "enemy"}
-    if (!aliveTeams["enemy"]) {return "player"}
+      if (c.hp > 0) { alive[c.team] = true; }
+    });
+    if (!alive["player"]) { return "enemy"; }
+    if (!alive["enemy"]) { return "player"; }
     return null;
   }
 
   async init() {
+    const customer = this.battle.combatants[this.battle.activeCombatants.enemy];
     await this.onNewEvent({
       type: "textMessage",
-      text: `${this.battle.enemy.name} wants to throw down!`
-    })
-
-    //Start the first turn!
+      text: `${customer.name}: ${this.battle.ticket.complaint}`,
+    });
     this.turn();
-
   }
-
 }

@@ -19,7 +19,7 @@ export const Characters = {
     type: CharacterTypes.spicy,
     src: "images/characters/people/brett001.png",
     icon: "images/icons/spicy.png",
-    actions: [ "damage1" ],
+    actions: [ "smack", "checkCords", "replaceBatteries", "ask" ],
   },
   "s002": {
     name: "Bacon Brigade",

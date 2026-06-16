@@ -109,6 +109,9 @@
 }
 
 .Character {
+  /* Help-desk v1 "drop creatures": each side shows its person sprite
+     (.Battle_hero / .Battle_enemy) instead of a separate creature. */
+  display: none;
   position: absolute;
   transform: scale(2);
   transition: opacity 0.4s, transform 0.4s;

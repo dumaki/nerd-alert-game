@@ -48,7 +48,7 @@ export const Enemies = {
         party: {
             "a": {
                 characterId: "customer",
-                maxHp: 30,
+                maxHp: 100,
                 level: 1,
             },
         }
