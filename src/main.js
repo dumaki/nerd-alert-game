@@ -12,6 +12,7 @@ import "../styles/Combatant.css";
 import "../styles/Team.css";
 import "../styles/SubmissionMenu.css";
 import "../styles/TitleScreen.css";
+import "../styles/FpsMeter.css";
 
 import { Overworld } from "./Overworld.js";
 import { TitleScreen } from "./TitleScreen.js";

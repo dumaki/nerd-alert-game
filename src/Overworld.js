@@ -2,6 +2,7 @@ import { OverworldMap, OverworldMaps } from "./OverworldMap.js";
 import { Hud } from "./Hud.js";
 import { DirectionInput } from "./DirectionInput.js";
 import { KeyPressListener } from "./KeyPressListener.js";
+import { FpsMeter } from "./FpsMeter.js";
 
 export class Overworld {
   constructor(config) {
@@ -16,6 +17,9 @@ export class Overworld {
      if (this.gameLoopRunning) { return; }
      this.gameLoopRunning = true;
      const step = () => {
+       //Dev FPS readout — counts every rendered frame.
+       this.fpsMeter?.tick();
+
        //Clear off the canvas
        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
  
@@ -106,24 +110,28 @@ export class Overworld {
  
    this.directionInput = new DirectionInput();
    this.directionInput.init();
- 
+
+   // Dev FPS readout (toggle with the ` backtick key).
+   this.fpsMeter = new FpsMeter();
+   this.fpsMeter.init();
+   new KeyPressListener("Backquote", () => this.fpsMeter.toggle());
+
    this.startGameLoop();
 
-   // --- INTRO DISABLED for a performance A/B test (re-enable by uncommenting). ---
    // Episode-style intro: cinematic bars + the episode title card. The bars stay
    // up through the card, then slide away as soon as the player takes their first
    // step. (Player can skip the card with Enter.)
-   // this.map.startCutscene([
-   //   { type: "letterbox", on: true },
-   //   { type: "titleCard", title: "Nerd Alert!", subtitle: "Episode 1: New Guy" },
-   // ])
-   //
-   // const liftIntroLetterbox = e => {
-   //   if (e.detail.whoId === "hero") {
-   //     document.removeEventListener("PersonWalkingComplete", liftIntroLetterbox);
-   //     this.letterbox?.hide(() => {});
-   //   }
-   // };
-   // document.addEventListener("PersonWalkingComplete", liftIntroLetterbox);
+   this.map.startCutscene([
+     { type: "letterbox", on: true },
+     { type: "titleCard", title: "Nerd Alert!", subtitle: "Episode 1: New Guy" },
+   ])
+
+   const liftIntroLetterbox = e => {
+     if (e.detail.whoId === "hero") {
+       document.removeEventListener("PersonWalkingComplete", liftIntroLetterbox);
+       this.letterbox?.hide(() => {});
+     }
+   };
+   document.addEventListener("PersonWalkingComplete", liftIntroLetterbox);
   }
  }
