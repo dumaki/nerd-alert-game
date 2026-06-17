@@ -114,6 +114,42 @@ export class OverworldEvent {
     }
   }
 
+  // Smoothly glide the camera to a world tile (x, y) over `time` ms, leaving the
+  // characters where they are. Uses a free-floating camera object the game loop reads.
+  cameraPan(resolve) {
+    const map = this.map;
+    const from = map.cameraPerson || map.gameObjects.hero;
+    const startX = from.x;
+    const startY = from.y;
+    const targetX = utils.withGrid(this.event.x);
+    const targetY = utils.withGrid(this.event.y);
+    const duration = this.event.time ?? 1000;
+
+    const camera = { x: startX, y: startY };
+    map.cameraPerson = camera;
+
+    let startTime = null;
+    const step = (now) => {
+      if (startTime === null) { startTime = now; }
+      const t = Math.min(1, (now - startTime) / duration);
+      const ease = t * (2 - t); // easeOutQuad
+      camera.x = startX + (targetX - startX) * ease;
+      camera.y = startY + (targetY - startY) * ease;
+      if (t < 1) {
+        requestAnimationFrame(step);
+      } else {
+        resolve();
+      }
+    };
+    requestAnimationFrame(step);
+  }
+
+  // Snap the camera back onto a game object (e.g. { who: "hero" } to resume following).
+  cameraFollow(resolve) {
+    this.map.cameraPerson = this.map.gameObjects[this.event.who];
+    resolve();
+  }
+
   changeMap(resolve) {
 
     const sceneTransition = new SceneTransition();

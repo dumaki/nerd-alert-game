@@ -16,8 +16,9 @@ export class Overworld {
        //Clear off the canvas
        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
  
-       //Establish the camera person
-       const cameraPerson = this.map.gameObjects.hero;
+       //Establish the camera focus. Defaults to the hero, but a cutscene can
+       //point it at another object (cameraFollow) or pan it freely (cameraPan).
+       const cameraPerson = this.map.cameraPerson || this.map.gameObjects.hero;
  
        //Update all objects
        Object.values(this.map.gameObjects).forEach(object => {
