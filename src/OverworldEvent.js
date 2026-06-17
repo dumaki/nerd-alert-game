@@ -98,6 +98,35 @@ export class OverworldEvent {
     resolve();
   }
 
+  // Hide a character (e.g. they've "merged" into the hero after joining the
+  // party). Stops drawing them and clears the wall they occupied so others can
+  // walk through that tile.
+  hideObject(resolve) {
+    const who = this.map.gameObjects[this.event.who];
+    if (who) {
+      who.isHidden = true;
+      this.map.removeWall(who.x, who.y);
+    }
+    resolve();
+  }
+
+  // Reveal a hidden character, optionally snapping them to a tile/direction
+  // first (e.g. a party member popping back out of the hero at the right spot).
+  showObject(resolve) {
+    const who = this.map.gameObjects[this.event.who];
+    if (who) {
+      // Clear any wall the object currently holds before relocating, so moving an
+      // already-visible object (e.g. snapping the hero) leaves no phantom wall.
+      this.map.removeWall(who.x, who.y);
+      if (this.event.x !== undefined) { who.x = utils.withGrid(this.event.x); }
+      if (this.event.y !== undefined) { who.y = utils.withGrid(this.event.y); }
+      if (this.event.direction) { who.direction = this.event.direction; }
+      who.isHidden = false;
+      this.map.addWall(who.x, who.y);
+    }
+    resolve();
+  }
+
   // Run several event sequences at the same time (e.g. two characters walking
   // together). this.event.events is an array of sequences; each sequence is a
   // list of events run in order, and the sequences themselves run concurrently.

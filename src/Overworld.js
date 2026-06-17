@@ -43,6 +43,7 @@ export class Overworld {
        Object.values(this.map.gameObjects).sort((a,b) => {
          return a.y - b.y;
        }).forEach(object => {
+         if (object.isHidden) { return; }
          object.sprite.draw(this.ctx, cameraPerson);
        })
  

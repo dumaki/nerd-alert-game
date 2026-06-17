@@ -53,8 +53,13 @@ export class OverworldMap {
     })
   }
 
-  async startCutscene(events) {
-    this.isCutscenePlaying = true;
+  // blocking (default) holds the player still for the whole scene. A non-blocking
+  // cutscene runs its events without setting isCutscenePlaying, so the player can
+  // keep walking while a scripted NPC moves (e.g. the postman crossing to the exit).
+  async startCutscene(events, { blocking = true } = {}) {
+    if (blocking) {
+      this.isCutscenePlaying = true;
+    }
 
     for (let i=0; i<events.length; i++) {
       const eventHandler = new OverworldEvent({
@@ -67,7 +72,9 @@ export class OverworldMap {
       }
     }
 
-    this.isCutscenePlaying = false;
+    if (blocking) {
+      this.isCutscenePlaying = false;
+    }
 
     //Reset NPCs to do their idle behavior
     Object.values(this.gameObjects).forEach(object => object.doBehaviorEvent(this))
@@ -90,7 +97,9 @@ export class OverworldMap {
     const match = this.cutsceneSpaces[ `${hero.x},${hero.y}` ];
     if (!this.isCutscenePlaying && match) {
       const relevantScenario = this.getRelevantScenario(match);
-      relevantScenario && this.startCutscene(relevantScenario.events)
+      relevantScenario && this.startCutscene(relevantScenario.events, {
+        blocking: !relevantScenario.nonBlocking
+      })
     }
   }
 
@@ -124,6 +133,92 @@ export class OverworldMap {
   }
 
 }
+
+// The SeventhFloor "meet Toshi" cutscene. Fires from any of the four walkable
+// tiles in column x=16 (y = 14..17, bounded by walls at y=13 and y=18) so the
+// player can't cross that column without triggering it — Kenny is no longer
+// standing there to block the way. Whatever tile fires it, the first action
+// snaps Brett to (16,16) so the tuned choreography below still lines up.
+const seventhFloorMeetScenario = [{
+  disqualify: ["MET_AT_BRIDGET"],
+  events: [
+    { type: "letterbox", on: true },
+    // Anchor Brett to the canonical start tile regardless of which row fired.
+    { type: "showObject", who: "hero", x: 16, y: 16, direction: "up" },
+    { who: "hero", type: "walk", direction: "up" },
+    // Kenny reappears out of Brett (onto the tile Brett just stepped off of)
+    // to follow him over to meet Toshi.
+    { type: "showObject", who: "kenny", x: 16, y: 16, direction: "right" },
+    // --- Walk together to Bridget's office ---
+    { type: "parallel", events: [
+      Array.from({ length: 20 }, () => ({ who: "hero", type: "walk", direction: "right" })),
+      Array.from({ length: 20 }, () => ({ who: "kenny", type: "walk", direction: "right" })),
+    ]},
+
+    // --- ACT I climax. Camera coords below are the world tile to CENTER on;
+    // tune them (and every walk count) to frame your art and end positions. ---
+
+    // Pan over to the office to reveal Bridget + Toshi while the gang reacts.
+    { type: "cameraPan", x: 53, y: 17, time: 1200 },
+    { type: "textMessage", text: "KENNY: I knew, I knew it, I KNEW it!" },
+    { type: "textMessage", text: "BRETT: What'd you know?" },
+    { type: "textMessage", text: "KENNY: That he IS Asian!" },
+
+    // Pan back to Kenny & Brett.
+    { type: "cameraPan", x: 36, y: 16, time: 1200 },
+    { type: "textMessage", text: "BRETT: Know you didn't..." },
+    { type: "textMessage", text: "KENNY: Yeah I did! I figured it out when you said he was a tech genius." },
+
+    // Bridget + Toshi cross the floor and stop in front of the gang (in
+    // separate lanes so they don't collide), facing them.
+    { type: "parallel", events: [
+      [
+        ...Array.from({ length: 1 }, () => ({ who: "bridget", type: "walk", direction: "up" })),
+        ...Array.from({ length: 14 }, () => ({ who: "bridget", type: "walk", direction: "left" })),
+      ],
+      [
+        ...Array.from({ length: 2 }, () => ({ who: "toshi", type: "walk", direction: "up" })),
+        ...Array.from({ length: 13 }, () => ({ who: "toshi", type: "walk", direction: "left" })),
+      ],
+    ]},
+
+    { type: "textMessage", text: "BRIDGET: Kenny, Brett... I'd like you to meet Toshiyaki." },
+    { type: "textMessage", text: "BRIDGET: Toshiyaki, this is everyone." },
+    { type: "textMessage", text: "TOSHI: ... ..." },
+    { type: "textMessage", text: "KENNY: Does he speak English?" },
+    { type: "textMessage", text: "BRIDGET: You know, I'm not sure..." },
+    { type: "textMessage", text: "BRIDGET: ...but he came highly recommended from the boys upstairs." },
+
+    // Kenny and Brett turn to face each other.
+    { type: "parallel", events: [
+      [{ who: "kenny", type: "stand", direction: "up", time: 500 }],
+      [{ who: "hero", type: "stand", direction: "down", time: 500 }],
+    ]},
+    { type: "textMessage", text: "KENNY: We'll figure it out." },
+
+    // Toshi walks over to Brett and merges into the party, then disappears.
+    { who: "hero", type: "stand", direction: "right", time: 200 },
+    { who: "toshi", type: "walk", direction: "left" },
+    { who: "toshi", type: "walk", direction: "left" },
+    { who: "toshi", type: "walk", direction: "left" },
+    { who: "toshi", type: "walk", direction: "up" },
+    { who: "toshi", type: "stand", direction: "left", time: 300 },
+    { type: "hideObject", who: "toshi" },
+    { type: "addToParty", characterId: "toshi" },
+    { type: "textMessage", text: "Toshi joined the team!" },
+
+    // Kenny merges into Brett as well, so the whole party rides with the hero.
+    { who: "kenny", type: "stand", direction: "up", time: 300 },
+    { type: "hideObject", who: "kenny" },
+
+    // Brett heads back to the desks on his own (party in tow, off-screen).
+    { type: "cameraFollow", who: "hero" },
+    ...Array.from({ length: 20 }, () => ({ who: "hero", type: "walk", direction: "left" })),
+
+    { type: "letterbox", on: false },
+    { type: "addStoryFlag", flag: "MET_AT_BRIDGET" },
+  ]
+}];
 
 export const OverworldMaps = {
     BackLotHallway: {
@@ -304,7 +399,16 @@ export const OverworldMaps = {
       cutsceneSpaces: {
         [utils.asGridCoord(3, 9)]: [{
           disqualify: ["POSTMAN_BLOCKED_EXIT"],
-          events: [{
+          // Non-blocking: the postman walks over on his own while Brett stays free
+          // to move. Flag is set up front so re-stepping on this tile mid-walk
+          // doesn't start a second postman walk.
+          nonBlocking: true,
+          events: [
+            {
+              type: "addStoryFlag",
+              flag: "POSTMAN_BLOCKED_EXIT"
+            },
+            {
               who: "postman",
               type: "walk",
               direction: "right"
@@ -339,10 +443,6 @@ export const OverworldMaps = {
               who: "postman",
               type: "walk",
               direction: "right"
-            },
-            {
-              type: "addStoryFlag",
-              flag: "POSTMAN_BLOCKED_EXIT"
             },
           ]
         }],
@@ -878,30 +978,18 @@ export const OverworldMaps = {
             { type: "textMessage", text: "KENNY: Come  on, let's go see if's here yet." },
             { type: "textMessage", text: "BRETT: Okay!" },
 
+            // Kenny walks over to Brett and merges into the party (rather than
+            // walking out of the elevator). He ends adjacent to Brett, facing
+            // him, then disappears — "Kenny joined" follows.
             { who: "kenny", type: "walk", direction: "right" },
             { who: "kenny", type: "walk", direction: "right" },
-            { who: "kenny", type: "walk", direction: "down" },
-            { who: "kenny", type: "walk", direction: "down" },
-            { who: "kenny", type: "walk", direction: "down" },
-            { who: "kenny", type: "walk", direction: "down" },
-            { who: "kenny", type: "walk", direction: "down" },
-            { who: "kenny", type: "walk", direction: "down" },
-            { who: "kenny", type: "walk", direction: "down" },
-            { who: "kenny", type: "walk", direction: "down" },
-            { who: "kenny", type: "walk", direction: "down" },
-            { who: "kenny", type: "walk", direction: "down" },
-            { who: "kenny", type: "walk", direction: "down" },
-            { who: "kenny", type: "walk", direction: "down" },
-            { who: "kenny", type: "walk", direction: "down" },
-            { who: "kenny", type: "walk", direction: "down" },
-            { who: "kenny", type: "walk", direction: "down" },
-            { who: "kenny", type: "walk", direction: "down" },
-            { who: "kenny", type: "walk", direction: "down" },
-            { who: "kenny", type: "walk", direction: "down" },
+            { who: "kenny", type: "stand", direction: "right", time: 300 },
+            { type: "hideObject", who: "kenny" },
 
             { type: "textMessage", text: "Kenny has joined the team." },
             { type: "addToParty", characterId: "kenny" },
 
+            // Brett heads out of the elevator on his own.
             { who: "hero", type: "walk", direction: "left" },
             { who: "hero", type: "walk", direction: "down" },
             { who: "hero", type: "walk", direction: "down" },
@@ -927,15 +1015,10 @@ export const OverworldMaps = {
         x: utils.withGrid(7),
         y: utils.withGrid(7),
         src: "images/characters/people/kenny.png",
-        // Kenny walks to his spot on his own when the floor loads, WITHOUT freezing
-        // the player (behavior loops run outside cutscenes): 9 down + 10 right of his
-        // start (7,7) -> ends at grid (17,16), then faces down and stays put.
-        behaviorLoopRepeat: false,
-        behaviorLoop: [
-          ...Array.from({ length: 9 }, () => ({ type: "walk", direction: "down" })),
-          ...Array.from({ length: 10 }, () => ({ type: "walk", direction: "right" })),
-          { type: "stand", direction: "down", time: 400 },
-        ],
+        // Kenny is already in the party (he joined in the elevator), so he starts
+        // hidden — "inside" Brett. He pops back out to follow when the player
+        // reaches the (16,16) cutscene trigger (see showObject below).
+        isHidden: true,
       }),
       toshi: new Person({
         x: utils.withGrid(53),
@@ -1286,80 +1369,15 @@ export const OverworldMaps = {
         [utils.asGridCoord(42, 12)]:  true,
       },
     cutsceneSpaces: {
-      // Kenny stops at (17,16) facing down. The player catches up to him from the
-      // left and lands on (16,16) (Kenny blocks them from going further right), so
-      // the trigger lives there. Cutscene: letterbox in, Brett steps up one row so
-      // the two walk in separate lanes (a follower on the SAME row stutters, because
-      // the engine moves the hero before Kenny each frame), then both walk 20 tiles
-      // right together to stop in front of Bridget's office, then letterbox out.
-      // Fires once.
-      [utils.asGridCoord(16, 16)]: [{
-        disqualify: ["MET_AT_BRIDGET"],
-        events: [
-          { type: "letterbox", on: true },
-          { who: "hero", type: "walk", direction: "up" },
-          // --- Walk together to Bridget's office ---
-          { type: "parallel", events: [
-            Array.from({ length: 20 }, () => ({ who: "hero", type: "walk", direction: "right" })),
-            Array.from({ length: 20 }, () => ({ who: "kenny", type: "walk", direction: "right" })),
-          ]},
-
-          // --- ACT I climax. Camera coords below are the world tile to CENTER on;
-          // tune them (and every walk count) to frame your art and end positions. ---
-
-          // Pan over to the office to reveal Bridget + Toshi while the gang reacts.
-          { type: "cameraPan", x: 53, y: 17, time: 1200 },
-          { type: "textMessage", text: "KENNY: I knew, I knew it, I KNEW it!" },
-          { type: "textMessage", text: "BRETT: What'd you know?" },
-          { type: "textMessage", text: "KENNY: That he IS Asian!" },
-
-          // Pan back to Kenny & Brett.
-          { type: "cameraPan", x: 36, y: 16, time: 1200 },
-          { type: "textMessage", text: "BRETT: Know you didn't..." },
-          { type: "textMessage", text: "KENNY: Yeah I did! I figured it out when you said he was a tech genius." },
-
-          // Bridget + Toshi cross the floor and stop in front of the gang (in
-          // separate lanes so they don't collide), facing them.
-          { type: "parallel", events: [
-            [
-              ...Array.from({ length: 1 }, () => ({ who: "bridget", type: "walk", direction: "up" })),
-              ...Array.from({ length: 14 }, () => ({ who: "bridget", type: "walk", direction: "left" })),
-            ],
-            [
-              ...Array.from({ length: 2 }, () => ({ who: "toshi", type: "walk", direction: "up" })),
-              ...Array.from({ length: 13 }, () => ({ who: "toshi", type: "walk", direction: "left" })),
-            ],
-          ]},
-
-          { type: "textMessage", text: "BRIDGET: Kenny, Brett... I'd like you to meet Toshiyaki." },
-          { type: "textMessage", text: "BRIDGET: Toshiyaki, this is everyone." },
-          { type: "textMessage", text: "TOSHI: ... ..." },
-          { type: "textMessage", text: "KENNY: Does he speak English?" },
-          { type: "textMessage", text: "BRIDGET: You know, I'm not sure..." },
-          { type: "textMessage", text: "BRIDGET: ...but he came highly recommended from the boys upstairs." },
-
-          // Kenny and Brett turn to face each other.
-          { type: "parallel", events: [
-            [{ who: "kenny", type: "stand", direction: "up", time: 500 }],
-            [{ who: "hero", type: "stand", direction: "down", time: 500 }],
-          ]},
-          { type: "textMessage", text: "KENNY: We'll figure it out." },
-
-          { type: "addToParty", characterId: "toshi" },
-          { type: "textMessage", text: "Toshi joined the team!" },
-
-          // Head back to the desks together (camera follows the hero again).
-          { type: "cameraFollow", who: "hero" },
-          { type: "parallel", events: [
-            Array.from({ length: 20 }, () => ({ who: "hero", type: "walk", direction: "left" })),
-            Array.from({ length: 20 }, () => ({ who: "kenny", type: "walk", direction: "left" })),
-            Array.from({ length: 20 }, () => ({ who: "toshi", type: "walk", direction: "left" })),
-          ]},
-
-          { type: "letterbox", on: false },
-          { type: "addStoryFlag", flag: "MET_AT_BRIDGET" },
-        ]
-      }],
+      // The "meet Toshi" cutscene fires from any of the four walkable tiles in
+      // column x=16 (y = 14..17), so the player can't slip past now that Kenny
+      // isn't standing there to block the way. All four share one scenario
+      // (defined above as seventhFloorMeetScenario); it snaps Brett to (16,16)
+      // first so the choreography lines up no matter which row fired it. Fires once.
+      [utils.asGridCoord(16, 14)]: seventhFloorMeetScenario,
+      [utils.asGridCoord(16, 15)]: seventhFloorMeetScenario,
+      [utils.asGridCoord(16, 16)]: seventhFloorMeetScenario,
+      [utils.asGridCoord(16, 17)]: seventhFloorMeetScenario,
     },
   }
 }

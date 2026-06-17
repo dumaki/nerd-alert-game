@@ -8,6 +8,10 @@ export class GameObject {
     this.x = config.x || 0;
     this.y = config.y || 0;
     this.direction = config.direction || "down";
+    // Hidden objects aren't drawn and lay down no wall. Used for party members
+    // who have "merged" into the hero (e.g. after joining) and pop back out for
+    // a later cutscene via the showObject event.
+    this.isHidden = config.isHidden || false;
     this.sprite = new Sprite({
       gameObject: this,
       src: config.src || "images/characters/people/brett.png",
@@ -26,7 +30,9 @@ export class GameObject {
 
   mount(map) {
     this.isMounted = true;
-    map.addWall(this.x, this.y);
+    if (!this.isHidden) {
+      map.addWall(this.x, this.y);
+    }
 
     //If we have a behavior, kick off after a short delay
     setTimeout(() => {
