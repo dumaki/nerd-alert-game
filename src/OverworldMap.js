@@ -1338,7 +1338,11 @@ export const OverworldMaps = {
           { type: "textMessage", text: "BRIDGET: You know, I'm not sure..." },
           { type: "textMessage", text: "BRIDGET: ...but he came highly recommended from the boys upstairs." },
 
-          { who: "kenny", type: "stand", direction: "up", time: 500 }, // Kenny turns to Brett
+          // Kenny and Brett turn to face each other.
+          { type: "parallel", events: [
+            [{ who: "kenny", type: "stand", direction: "up", time: 500 }],
+            [{ who: "hero", type: "stand", direction: "down", time: 500 }],
+          ]},
           { type: "textMessage", text: "KENNY: We'll figure it out." },
 
           { type: "addToParty", characterId: "toshi" },
