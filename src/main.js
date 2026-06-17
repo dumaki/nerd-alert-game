@@ -11,10 +11,20 @@ import "../styles/Battle.css";
 import "../styles/Combatant.css";
 import "../styles/Team.css";
 import "../styles/SubmissionMenu.css";
+import "../styles/TitleScreen.css";
 
 import { Overworld } from "./Overworld.js";
+import { TitleScreen } from "./TitleScreen.js";
 
-const overworld = new Overworld({
-  element: document.querySelector(".game-container"),
-});
-overworld.init();
+const container = document.querySelector(".game-container");
+
+// Boot the game at an episode. (Only Episode 1 has content for now; "Start" and
+// "Episodes -> Episode 1" both begin it from the beginning.)
+function startGame(/* episodeNumber */) {
+  const overworld = new Overworld({ element: container });
+  overworld.init();
+}
+
+// Show the title menu first; it calls startGame when the player picks Start.
+const titleScreen = new TitleScreen({ onStart: startGame });
+titleScreen.init(container);

@@ -1,0 +1,65 @@
+.TitleScreen {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  /* Placeholder backdrop — swap for your pixel-art title screen later. */
+  background: #1a1130;
+}
+
+.TitleScreen_title {
+  margin: 0;
+  color: #fff;
+  font-size: 26px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 0 var(--border-color, #291D4D);
+}
+
+.TitleScreen_byeline {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+}
+
+/* Reuse the KeyboardMenu, but flow it in the centered column without the
+   in-game border/background. */
+.TitleScreen .KeyboardMenu {
+  position: relative;
+  background: transparent;
+  border: 0;
+  width: 130px;
+}
+.TitleScreen .KeyboardMenu button {
+  justify-content: center;
+  padding-left: 0;
+  height: 16px;
+  font-size: 12px;
+  color: #fff;
+}
+.TitleScreen .KeyboardMenu button:focus {
+  background: rgba(127, 194, 255, 0.25);
+}
+.TitleScreen .KeyboardMenu button:disabled {
+  color: #6b6488; /* grayed out */
+}
+
+/* Description of the focused option, pinned subtly at the bottom. */
+.TitleScreen .DescriptionBox {
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  right: 0;
+  background: transparent;
+  border: 0;
+  text-align: center;
+}
+.TitleScreen .DescriptionBox p {
+  margin: 0;
+  font-size: 8px;
+  color: #9a93b5;
+}
