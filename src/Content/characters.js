@@ -62,5 +62,15 @@ export const Characters = {
     src: "images/characters/people/brett001.png",
     icon: "images/icons/chill.png",
     actions: [ "damage1" ],
+  },
+  // Recruitable party member (joins at the end of Act I). TODO: src reuses Brett's
+  // battle portrait as a placeholder until Toshi has his own small battle portrait.
+  "toshi": {
+    name: "Toshi",
+    description: "The new guy - a tech genius from far away.",
+    type: CharacterTypes.chill,
+    src: "images/characters/people/brett001.png",
+    icon: "images/icons/chill.png",
+    actions: [ "smack", "checkCords", "replaceBatteries", "ask" ],
   }
 }

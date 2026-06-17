@@ -1298,10 +1298,60 @@ export const OverworldMaps = {
         events: [
           { type: "letterbox", on: true },
           { who: "hero", type: "walk", direction: "up" },
+          // --- Walk together to Bridget's office ---
           { type: "parallel", events: [
             Array.from({ length: 20 }, () => ({ who: "hero", type: "walk", direction: "right" })),
             Array.from({ length: 20 }, () => ({ who: "kenny", type: "walk", direction: "right" })),
           ]},
+
+          // --- ACT I climax. Camera coords below are the world tile to CENTER on;
+          // tune them (and every walk count) to frame your art and end positions. ---
+
+          // Pan over to the office to reveal Bridget + Toshi while the gang reacts.
+          { type: "cameraPan", x: 53, y: 17, time: 1200 },
+          { type: "textMessage", text: "KENNY: I knew, I knew it, I KNEW it!" },
+          { type: "textMessage", text: "BRETT: What'd you know?" },
+          { type: "textMessage", text: "KENNY: That he IS Asian!" },
+
+          // Pan back to Kenny & Brett.
+          { type: "cameraPan", x: 36, y: 16, time: 1200 },
+          { type: "textMessage", text: "BRETT: Know you didn't..." },
+          { type: "textMessage", text: "KENNY: Yeah I did! I figured it out when you said he was a tech genius." },
+
+          // Bridget + Toshi cross the floor and stop in front of the gang (in
+          // separate lanes so they don't collide), facing them.
+          { type: "parallel", events: [
+            [
+              ...Array.from({ length: 1 }, () => ({ who: "bridget", type: "walk", direction: "up" })),
+              ...Array.from({ length: 14 }, () => ({ who: "bridget", type: "walk", direction: "left" })),
+            ],
+            [
+              ...Array.from({ length: 2 }, () => ({ who: "toshi", type: "walk", direction: "up" })),
+              ...Array.from({ length: 13 }, () => ({ who: "toshi", type: "walk", direction: "left" })),
+            ],
+          ]},
+
+          { type: "textMessage", text: "BRIDGET: Kenny, Brett... I'd like you to meet Toshiyaki." },
+          { type: "textMessage", text: "BRIDGET: Toshiyaki, this is everyone." },
+          { type: "textMessage", text: "TOSHI: ... ..." },
+          { type: "textMessage", text: "KENNY: Does he speak English?" },
+          { type: "textMessage", text: "BRIDGET: You know, I'm not sure..." },
+          { type: "textMessage", text: "BRIDGET: ...but he came highly recommended from the boys upstairs." },
+
+          { who: "kenny", type: "stand", direction: "up", time: 500 }, // Kenny turns to Brett
+          { type: "textMessage", text: "KENNY: We'll figure it out." },
+
+          { type: "addToParty", characterId: "toshi" },
+          { type: "textMessage", text: "Toshi joined the team!" },
+
+          // Head back to the desks together (camera follows the hero again).
+          { type: "cameraFollow", who: "hero" },
+          { type: "parallel", events: [
+            Array.from({ length: 20 }, () => ({ who: "hero", type: "walk", direction: "left" })),
+            Array.from({ length: 20 }, () => ({ who: "kenny", type: "walk", direction: "left" })),
+            Array.from({ length: 20 }, () => ({ who: "toshi", type: "walk", direction: "left" })),
+          ]},
+
           { type: "letterbox", on: false },
           { type: "addStoryFlag", flag: "MET_AT_BRIDGET" },
         ]
