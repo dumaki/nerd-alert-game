@@ -11,7 +11,9 @@ export class FpsMeter {
 
   init() {
     this.element = document.createElement("div");
-    this.element.classList.add("FpsMeter");
+    // Hidden on load; press ` (backtick) to show it. It keeps counting while
+    // hidden, so it shows the live value the moment you toggle it on.
+    this.element.classList.add("FpsMeter", "FpsMeter--hidden");
     this.element.textContent = "-- fps";
     document.body.appendChild(this.element);
   }
