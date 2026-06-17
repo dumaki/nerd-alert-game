@@ -37,7 +37,15 @@ export class GameObject {
   update() {
   }
 
-  async doBehaviorEvent(map) { 
+  async doBehaviorEvent(map) {
+
+    //Stop loops belonging to a map we've left. changeMap swaps overworld.map, but
+    //each map keeps its own NPC instances whose loops would otherwise idle forever
+    //in the background — every visited map would pile on, slowing the game over time.
+    if (map.overworld && map.overworld.map !== map) {
+      this.behaviorLoopActive = false;
+      return;
+    }
 
     //Don't do anything if there is a more important cutscene or I don't have config to do anything
     //anyway.

@@ -12,6 +12,9 @@ export class Overworld {
   }
  
    startGameLoop() {
+     //Never run two loops at once (a fast pause/unpause could otherwise stack them).
+     if (this.gameLoopRunning) { return; }
+     this.gameLoopRunning = true;
      const step = () => {
        //Clear off the canvas
        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -44,8 +47,11 @@ export class Overworld {
        
        if (!this.map.isPaused) {
          requestAnimationFrame(() => {
-           step();   
+           step();
          })
+       } else {
+         //Paused: stop the loop and allow a fresh one to start on unpause.
+         this.gameLoopRunning = false;
        }
      }
      step();
