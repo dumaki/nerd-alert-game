@@ -51,13 +51,29 @@ export class GameObject {
       return;
     }
 
+    //Don't run two behavior loops for the same object at once. When a cutscene
+    //ends, the engine re-pokes EVERY object's behavior; without this guard a second
+    //concurrent loop stacks up each time, and the game gets progressively slower.
+    if (this.behaviorLoopActive) {
+      return;
+    }
+    this.behaviorLoopActive = true;
+
     //Setting up our event with relevant info
     let eventConfig = this.behaviorLoop[this.behaviorLoopIndex];
     eventConfig.who = this.id;
 
+    //An idle "stand" with no `time` resolves on setTimeout(0), which tight-loops
+    //the CPU. Give looping idle stands a hold so they idle instead of spinning.
+    //(Cutscene stands run through startCutscene, not here, so they're unaffected.)
+    if (eventConfig.type === "stand" && eventConfig.time === undefined) {
+      eventConfig.time = 1000;
+    }
+
     //Create an event instance out of our next event config
     const eventHandler = new OverworldEvent({ map, event: eventConfig });
-    await eventHandler.init(); 
+    await eventHandler.init();
+    this.behaviorLoopActive = false;
 
     //Setting the next event to fire
     this.behaviorLoopIndex += 1;
