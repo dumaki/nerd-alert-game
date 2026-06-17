@@ -103,10 +103,20 @@ export class Overworld {
  
    this.startGameLoop();
 
-   // Episode-style intro. Extend this array with more title cards or an opening
-   // cutscene (textMessage / walk events). The player can skip the card with Enter.
+   // Episode-style intro: cinematic bars + the episode title card. The bars stay
+   // up through the card, then slide away as soon as the player takes their first
+   // step. (Player can skip the card with Enter.)
    this.map.startCutscene([
+     { type: "letterbox", on: true },
      { type: "titleCard", title: "Nerd Alert!", subtitle: "Episode 1: New Guy" },
    ])
+
+   const liftIntroLetterbox = e => {
+     if (e.detail.whoId === "hero") {
+       document.removeEventListener("PersonWalkingComplete", liftIntroLetterbox);
+       this.letterbox?.hide(() => {});
+     }
+   };
+   document.addEventListener("PersonWalkingComplete", liftIntroLetterbox);
   }
  }
