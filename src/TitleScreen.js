@@ -1,4 +1,5 @@
 import { KeyboardMenu } from "./KeyboardMenu.js";
+import { loadSave } from "./State/SaveSystem.js";
 
 const EPISODES = [
   "Episode 1: New Guy",
@@ -7,17 +8,6 @@ const EPISODES = [
   "Episode 4: ???",
   "Episode 5: ???",
 ];
-
-// Reads progress from localStorage. There's no save system yet, so this returns
-// null today — but Continue / Episodes already read from it, so they light up
-// automatically once a save is written here.
-function loadSave() {
-  try {
-    return JSON.parse(localStorage.getItem("nerdAlertSave")) || null;
-  } catch {
-    return null;
-  }
-}
 
 export class TitleScreen {
   // onStart(episodeNumber) boots the game at that episode.
@@ -80,10 +70,11 @@ export class TitleScreen {
     };
   }
 
-  startEpisode(ep) {
+  startEpisode(ep, save) {
     // Only Episode 1 has content for now; Start and Episodes -> Ep 1 both begin it.
+    // When `save` is passed (the Continue option), the game restores from it.
     this.close();
-    this.onStart(ep);
+    this.onStart(ep, save);
   }
 
   quit() {

@@ -1,0 +1,75 @@
+/* Objective tracker, top-right. Sits below the cinematic letterbox bars (no
+   z-index) so it's hidden during letterboxed cutscenes. A background box keeps
+   the text readable (no heavy drop shadow). */
+.ObjectiveHud {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  width: 112px;
+  text-align: left;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 3px 5px;
+  border-radius: 3px;
+  transition: opacity 0.25s ease;
+}
+
+/* Hidden by default; revealed temporarily on change or while holding Shift. */
+.ObjectiveHud--hidden {
+  opacity: 0;
+}
+
+.ObjectiveHud_title {
+  margin: 0 0 2px 0;
+  font-size: 8px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.ObjectiveHud_list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ObjectiveHud_row {
+  font-size: 8px;
+  line-height: 1.35;
+  color: #fff;
+  margin-bottom: 1px;
+}
+.ObjectiveHud_row::before {
+  content: "• ";
+}
+
+/* Sub-objective indent. */
+.ObjectiveHud_row--d1 {
+  padding-left: 8px;
+  opacity: 0.9;
+}
+
+.ObjectiveHud_opt {
+  font-style: italic;
+  opacity: 0.75;
+}
+
+/* Newly active objectives slide in. */
+.ObjectiveHud_row--active {
+  animation: objectiveIn 0.4s ease-out;
+}
+@keyframes objectiveIn {
+  from { opacity: 0; transform: translateX(6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Completed objectives: strike through, then fade away and get removed. */
+.ObjectiveHud_row--done {
+  text-decoration: line-through;
+  opacity: 0.6;
+  animation: objectiveDone 1.8s ease-out forwards;
+}
+@keyframes objectiveDone {
+  0%   { opacity: 0.85; }
+  70%  { opacity: 0.6; }
+  100% { opacity: 0; }
+}

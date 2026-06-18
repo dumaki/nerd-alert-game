@@ -8,6 +8,8 @@ import { Enemies } from "./Content/enemies.js";
 import { Battle } from "./Battle/Battle.js";
 import { TitleCard } from "./TitleCard.js";
 import { Letterbox } from "./Letterbox.js";
+import { writeSave } from "./State/SaveSystem.js";
+import { Characters } from "./Content/characters.js";
 
 export class OverworldEvent {
   constructor({ map, event}) {
@@ -65,6 +67,7 @@ export class OverworldEvent {
 
     const message = new TextMessage({
       text: this.event.text,
+      speaker: this.event.speaker,
       onComplete: () => resolve()
     })
     message.init( document.querySelector(".game-container") )
@@ -183,12 +186,26 @@ export class OverworldEvent {
 
     const sceneTransition = new SceneTransition();
     sceneTransition.init(document.querySelector(".game-container"), () => {
-      this.map.overworld.startMap( OverworldMaps[this.event.map] );
+      this.map.overworld.startMap( OverworldMaps[this.event.map], this.event.map );
       resolve();
 
       sceneTransition.fadeOut();
 
     })
+  }
+
+  // Persist the game (used when the player signs in with the security guard) and
+  // flash a "Saving..." note in the top-left corner. Non-blocking — the note
+  // fades on its own so control returns immediately.
+  saveGame(resolve) {
+    writeSave(this.map.overworld);
+    const container = document.querySelector(".game-container");
+    const note = document.createElement("div");
+    note.classList.add("SaveNote");
+    note.textContent = "Saving...";
+    container.appendChild(note);
+    setTimeout(() => note.remove(), 1500);
+    resolve();
   }
 
   battle(resolve) {
@@ -216,6 +233,27 @@ export class OverworldEvent {
 
   addStoryFlag(resolve) {
     playerState.storyFlags[this.event.flag] = true;
+    utils.emitEvent("StoryFlagsChanged");
+    resolve();
+  }
+
+  // Temporarily render the hero as a specific character for a cutscene WITHOUT
+  // changing who you're playing as (activeCharacterId/HUD stay put). Used so a
+  // story scene that also spawns a party member as a separate sprite doesn't end
+  // up with two of the same person on screen (e.g. playing as Kenny when the
+  // cutscene's own Kenny pops out of Brett). Pair with restoreHeroSprite.
+  setHeroSprite(resolve) {
+    const hero = this.map.gameObjects.hero;
+    const config = Characters[this.event.characterId];
+    if (hero && config?.overworldSrc) {
+      hero.sprite.setImage(config.overworldSrc);
+    }
+    resolve();
+  }
+
+  // Put the hero back to whichever character you're actually playing as.
+  restoreHeroSprite(resolve) {
+    this.map.overworld.applyActiveCharacterSprite();
     resolve();
   }
 

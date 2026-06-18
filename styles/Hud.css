@@ -5,6 +5,19 @@
     image-rendering: pixelated;
 }
 
+/* Brief "Saving..." indicator, top-right so it doesn't overlap the HUD. */
+.SaveNote {
+    position: absolute;
+    right: 4px;
+    top: 4px;
+    z-index: 8; /* above the cinematic letterbox bars */
+    font-size: 8px;
+    color: var(--menu-font-color, #fff);
+    background: var(--menu-background, rgba(0,0,0,0.6));
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
 .Hud .Combatant {
     position: relative;
     margin-bottom: 10px;

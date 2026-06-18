@@ -13,6 +13,7 @@ import "../styles/Team.css";
 import "../styles/SubmissionMenu.css";
 import "../styles/TitleScreen.css";
 import "../styles/FpsMeter.css";
+import "../styles/ObjectiveHud.css";
 
 import { Overworld } from "./Overworld.js";
 import { TitleScreen } from "./TitleScreen.js";
@@ -20,10 +21,12 @@ import { TitleScreen } from "./TitleScreen.js";
 const container = document.querySelector(".game-container");
 
 // Boot the game at an episode. (Only Episode 1 has content for now; "Start" and
-// "Episodes -> Episode 1" both begin it from the beginning.)
-function startGame(/* episodeNumber */) {
+// "Episodes -> Episode 1" both begin it from the beginning.) When `save` is
+// provided (the title's Continue option), the overworld restores from it instead
+// of playing the intro.
+function startGame(episodeNumber, save) {
   const overworld = new Overworld({ element: container });
-  overworld.init();
+  overworld.init(save);
 }
 
 // Show the title menu first; it calls startGame when the player picks Start.

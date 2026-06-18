@@ -18,6 +18,10 @@ export const Characters = {
     description: "Character desc here",
     type: CharacterTypes.spicy,
     src: "images/characters/people/brett001.png",
+    // overworldSrc is the walk-around sprite sheet (distinct from `src`, the
+    // small battle portrait). Characters with one can be steered in the
+    // overworld via the pause menu's "Play as" options.
+    overworldSrc: "images/characters/people/brett.png",
     icon: "images/icons/spicy.png",
     actions: [ "smack", "checkCords", "replaceBatteries", "ask" ],
   },
@@ -49,7 +53,8 @@ export const Characters = {
     name: "Kenny",
     description: "Your coworker on the IT help desk.",
     type: CharacterTypes.chill,
-    src: "images/characters/people/kenny.png",
+    src: "images/characters/people/kenny001.png",
+    overworldSrc: "images/characters/people/kenny.png",
     icon: "images/icons/chill.png",
     actions: [ "damage1" ],
   },
@@ -63,14 +68,43 @@ export const Characters = {
     icon: "images/icons/chill.png",
     actions: [ "damage1" ],
   },
-  // Recruitable party member (joins at the end of Act I). TODO: src reuses Brett's
-  // battle portrait as a placeholder until Toshi has his own small battle portrait.
+  // Recruitable party member (joins at the end of Act I).
   "toshi": {
     name: "Toshi",
     description: "The new guy - a tech genius from far away.",
     type: CharacterTypes.chill,
-    src: "images/characters/people/brett001.png",
+    src: "images/characters/people/toshi001.png",
+    overworldSrc: "images/characters/people/Toshi.png",
     icon: "images/icons/chill.png",
     actions: [ "smack", "checkCords", "replaceBatteries", "ask" ],
+  },
+
+  // Dialogue-only NPCs. They aren't party members or battlers — these entries
+  // exist so the chat box can show their portrait when they speak (matched by
+  // name from a "NAME:" prefix, or via an explicit `speaker` on the textMessage).
+  // No overworldSrc, so they never appear in the pause menu's "Play as" list.
+  "bridget": {
+    name: "Bridget",
+    description: "Your manager.",
+    type: CharacterTypes.chill,
+    src: "images/characters/people/bridget001.png",
+    icon: "images/icons/chill.png",
+    actions: [ "damage1" ],
+  },
+  "postman": {
+    name: "Postman",
+    description: "Always busy delivering the mail.",
+    type: CharacterTypes.chill,
+    src: "images/characters/people/postman001.png",
+    icon: "images/icons/chill.png",
+    actions: [ "damage1" ],
+  },
+  "securityGuard": {
+    name: "Security Guard",
+    description: "Watches the lobby. Make sure you sign in.",
+    type: CharacterTypes.chill,
+    src: "images/characters/people/securityguard001.png",
+    icon: "images/icons/chill.png",
+    actions: [ "damage1" ],
   }
 }

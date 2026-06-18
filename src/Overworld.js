@@ -3,6 +3,12 @@ import { Hud } from "./Hud.js";
 import { DirectionInput } from "./DirectionInput.js";
 import { KeyPressListener } from "./KeyPressListener.js";
 import { FpsMeter } from "./FpsMeter.js";
+import { ObjectiveHud } from "./ObjectiveHud.js";
+import { playerState } from "./State/PlayerState.js";
+import { Characters } from "./Content/characters.js";
+import { utils } from "./utils.js";
+import { SceneTransition } from "./SceneTransition.js";
+import { loadSave, applySaveToPlayerState } from "./State/SaveSystem.js";
 
 export class Overworld {
   constructor(config) {
@@ -85,30 +91,99 @@ export class Overworld {
     })
   }
  
-  startMap(mapConfig) {
+  // Reskin the hero to whichever party member is currently active. Called after a
+  // map mounts (each map's hero defaults to Brett's sheet) and whenever the player
+  // swaps characters in the pause menu.
+  applyActiveCharacterSprite() {
+    const hero = this.map?.gameObjects?.hero;
+    const config = Characters[playerState.activeCharacterId];
+    if (hero && config?.overworldSrc) {
+      hero.sprite.setImage(config.overworldSrc);
+    }
+  }
+
+  startMap(mapConfig, mapId, { skipCutsceneOnLoad = false } = {}) {
    this.map = new OverworldMap(mapConfig);
+   this.mapId = mapId;
    this.map.overworld = this;
    this.map.mountObjects();
+   this.applyActiveCharacterSprite();
 
    // Fire a cutscene the instant the map mounts (no key press / footstep needed).
    // Started synchronously so isCutscenePlaying is true before NPC idle loops kick
    // in, which keeps control until the cutscene finishes (e.g. the elevator scene).
-   if (mapConfig.cutsceneOnLoad) {
+   // Skipped when restoring a save (we don't want to replay an onLoad scene).
+   if (!skipCutsceneOnLoad && mapConfig.cutsceneOnLoad) {
      this.map.startCutscene(mapConfig.cutsceneOnLoad);
    }
   }
- 
-  init() {
- 
+
+  // Drop the hero onto the tile/direction recorded in a save (coords are in grid
+  // units). Re-sync the wall so the restored tile is occupied.
+  placeHeroFromSave(save) {
+    const hero = this.map.gameObjects.hero;
+    this.map.removeWall(hero.x, hero.y);
+    hero.x = utils.withGrid(save.heroX);
+    hero.y = utils.withGrid(save.heroY);
+    hero.direction = save.heroDirection || "down";
+    this.map.addWall(hero.x, hero.y);
+  }
+
+  // Live-load a save while the game is already running (from the pause menu).
+  // Fades out, restores state + map + hero, rebuilds the HUD, fades back in.
+  loadGame(save) {
+    const container = document.querySelector(".game-container");
+    const transition = new SceneTransition();
+    transition.init(container, () => {
+      applySaveToPlayerState(save);
+      this.startMap(OverworldMaps[save.mapId], save.mapId, { skipCutsceneOnLoad: true });
+      this.placeHeroFromSave(save);
+      this.hud.createElement();
+      container.appendChild(this.hud.element);
+      transition.fadeOut();
+    });
+  }
+
+  // init() starts a fresh game with the episode intro. init(save) restores a
+  // saved game (no intro, dropped straight back where you signed in).
+  init(save) {
+
+   const container = document.querySelector(".game-container");
+
+   // Restore state before the HUD is built so it reflects the saved character.
+   if (save) {
+     applySaveToPlayerState(save);
+   }
+
    this.hud = new Hud();
-   this.hud.init(document.querySelector(".game-container"));
- 
-   this.startMap(OverworldMaps.BackLotHallway);
- 
- 
+   this.hud.init(container);
+
+   // Objective tracker (top-right). Driven by story flags, so it reflects the
+   // restored state immediately when loading a save.
+   this.objectiveHud = new ObjectiveHud();
+   this.objectiveHud.init(container);
+
+   if (save) {
+     this.startMap(OverworldMaps[save.mapId], save.mapId, { skipCutsceneOnLoad: true });
+     this.placeHeroFromSave(save);
+   } else {
+     this.startMap(OverworldMaps.BackLotHallway, "BackLotHallway");
+   }
+
    this.bindActionInput();
    this.bindHeroPositionCheck();
- 
+
+   // Live-swap the hero sprite when the player picks a new character to play as.
+   document.addEventListener("ActiveCharacterChanged", () => {
+     this.applyActiveCharacterSprite();
+   });
+
+   // Pause-menu "Load" asks the overworld to restore the saved game.
+   document.addEventListener("LoadGameRequested", () => {
+     const latest = loadSave();
+     if (latest) { this.loadGame(latest); }
+   });
+
    this.directionInput = new DirectionInput();
    this.directionInput.init();
 
@@ -118,6 +193,9 @@ export class Overworld {
    new KeyPressListener("Backquote", () => this.fpsMeter.toggle());
 
    this.startGameLoop();
+
+   // A restored game skips the episode intro.
+   if (save) { return; }
 
    // Episode-style intro: cinematic bars + the episode title card. The bars stay
    // up through the card, then slide away as soon as the player takes their first

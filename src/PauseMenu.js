@@ -3,69 +3,54 @@ import { Characters } from "./Content/characters.js";
 import { KeyboardMenu } from "./KeyboardMenu.js";
 import { KeyPressListener } from "./KeyPressListener.js";
 import { utils } from "./utils.js";
+import { hasSave } from "./State/SaveSystem.js";
 
 export class PauseMenu {
     constructor({onComplete}) {
       this.onComplete = onComplete;
     }
   
-    getOptions(pageKey) {
-  
-      //Case 1: Show the first page of options
-      if (pageKey === "root") {
-        const lineupCharacters = playerState.lineup.map(id => {
-          const {characterId} = playerState.party[id];
+    getOptions() {
+      // One "Play as" entry per party member who has an overworld sprite, so the
+      // player can pick which of Brett / Kenny / Toshi they steer. The active one
+      // is marked and selecting it just closes the menu.
+      const playAsOptions = Object.values(playerState.party)
+        .map(member => member.characterId)
+        .filter(characterId => Characters[characterId]?.overworldSrc)
+        .map(characterId => {
           const base = Characters[characterId];
+          const isActive = playerState.activeCharacterId === characterId;
           return {
             label: base.name,
-            description: base.description,
+            description: isActive
+              ? `Already playing as ${base.name}.`
+              : `Play as ${base.name}.`,
+            right: () => isActive ? "★" : "",
             handler: () => {
-              this.keyboardMenu.setOptions( this.getOptions(id) )
-            }
-          }
-        })
-        return [
-          ...lineupCharacters,
-          {
-            label: "Save",
-            description: "Save your progress",
-            handler: () => {
-              //We'll come back to this...
-            }
-          },
-          {
-            label: "Close",
-            description: "Close the pause menu",
-            handler: () => {
+              playerState.setActiveCharacter(characterId);
               this.close();
             }
-          }
-        ]
-      }
-  
-      //Case 2: Show the options for just one character (by id)
-      const unequipped = Object.keys(playerState.party).filter(id => {
-        return playerState.lineup.indexOf(id) === -1;
-      }).map(id => {
-        const {characterId} = playerState.party[id];
-        const base = Characters[characterId];
-        return {
-          label: `Swap for ${base.name}`,
-          description: base.description,
-          handler: () => {
-            playerState.swapLineup(pageKey, id);
-            this.keyboardMenu.setOptions( this.getOptions("root") );
-          }
-        }
-      })
-  
+          };
+        });
+
       return [
-        ...unequipped,
+        ...playAsOptions,
         {
-          label: "Back",
-          description: "Back to root menu",
+          label: "Load",
+          disabled: !hasSave(),
+          description: hasSave()
+            ? "Reload your last save."
+            : "No save yet — sign in with the guard to save.",
           handler: () => {
-            this.keyboardMenu.setOptions( this.getOptions("root") );
+            this.close();
+            utils.emitEvent("LoadGameRequested");
+          }
+        },
+        {
+          label: "Close",
+          description: "Close the pause menu",
+          handler: () => {
+            this.close();
           }
         }
       ];
@@ -92,7 +77,7 @@ export class PauseMenu {
         descriptionContainer: container
       })
       this.keyboardMenu.init(this.element);
-      this.keyboardMenu.setOptions(this.getOptions("root"));
+      this.keyboardMenu.setOptions(this.getOptions());
   
       container.appendChild(this.element);
   

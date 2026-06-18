@@ -42,6 +42,19 @@ export class Sprite {
     this.gameObject = config.gameObject;
   }
 
+  // Swap the sprite sheet at runtime (e.g. the hero changing which party member
+  // you steer). All people sheets share the same 4x4 / 32px frame layout, so the
+  // current animation state carries over unchanged.
+  setImage(src) {
+    if (this.image.src.endsWith(src)) { return; }
+    this.isLoaded = false;
+    this.image = new Image();
+    this.image.src = src;
+    this.image.onload = () => {
+      this.isLoaded = true;
+    }
+  }
+
   get frame() {
     return this.animations[this.currentAnimation][this.currentAnimationFrame]
   }

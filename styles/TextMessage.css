@@ -14,6 +14,19 @@
   margin: 0;
   font-size: 12px;
 }
+/* Speaker portrait: native 27x21 art, bottom-left, pixel-crisp. Text indents
+   past it when present. */
+.TextMessage_portrait {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  width: 27px;
+  height: 21px;
+  image-rendering: pixelated;
+}
+.TextMessage_p--withPortrait {
+  margin-left: 33px;
+}
 .TextMessage span {
   opacity: 0;
 }

@@ -143,6 +143,10 @@ const seventhFloorMeetScenario = [{
   disqualify: ["MET_AT_BRIDGET"],
   events: [
     { type: "letterbox", on: true },
+    // Force the hero to render as Brett for this scene (Kenny pops out as his own
+    // sprite below, so if you were playing as Kenny you'd otherwise see two). The
+    // chosen character is restored once Kenny & Toshi merge back in at the end.
+    { type: "setHeroSprite", characterId: "s001" },
     // Anchor Brett to the canonical start tile regardless of which row fired.
     { type: "showObject", who: "hero", x: 16, y: 16, direction: "up" },
     { who: "hero", type: "walk", direction: "up" },
@@ -166,7 +170,7 @@ const seventhFloorMeetScenario = [{
 
     // Pan back to Kenny & Brett.
     { type: "cameraPan", x: 36, y: 16, time: 1200 },
-    { type: "textMessage", text: "BRETT: Know you didn't..." },
+    { type: "textMessage", text: "BRETT: No you didn't..." },
     { type: "textMessage", text: "KENNY: Yeah I did! I figured it out when you said he was a tech genius." },
 
     // Bridget + Toshi cross the floor and stop in front of the gang (in
@@ -195,6 +199,10 @@ const seventhFloorMeetScenario = [{
       [{ who: "hero", type: "stand", direction: "down", time: 500 }],
     ]},
     { type: "textMessage", text: "KENNY: We'll figure it out." },
+    { type: "textMessage", text: "BRIDGET: If you guys could, please show him around the office and take him to HR for his badge!" },
+    // Crosses off "Head upstairs to Bridget's Office" and adds the tour + badge
+    // objectives (Show Toshi around + its optionals, Get a badge for Toshi).
+    { type: "addStoryFlag", flag: "EP1_MET_TOSHI" },
 
     // Toshi walks over to Brett and merges into the party, then disappears.
     { who: "hero", type: "stand", direction: "right", time: 200 },
@@ -211,7 +219,11 @@ const seventhFloorMeetScenario = [{
     { who: "kenny", type: "stand", direction: "up", time: 300 },
     { type: "hideObject", who: "kenny" },
 
-    // Brett heads back to the desks on his own (party in tow, off-screen).
+    // Both party members are now merged in — flip the hero back to whoever you
+    // were playing as before the scene.
+    { type: "restoreHeroSprite" },
+
+    // The leader heads back to the desks on their own (party in tow, off-screen).
     { type: "cameraFollow", who: "hero" },
     ...Array.from({ length: 20 }, () => ({ who: "hero", type: "walk", direction: "left" })),
 
@@ -241,12 +253,12 @@ export const OverworldMaps = {
             {
               required: ["TALKED_TO_POSTMAN"],
               events: [
-                { type: "textMessage", text: "Isn't Postman the coolest?", faceHero: "toshi" },
+                { type: "textMessage", text: "Isn't Postman the coolest?", faceHero: "toshi", speaker: "toshi" },
               ]
             },
             {
               events: [
-                { type: "textMessage", text: "Have you talked to postman yet?", faceHero: "toshi" },
+                { type: "textMessage", text: "Have you talked to postman yet?", faceHero: "toshi", speaker: "toshi" },
               ]
             },
           ]
@@ -261,8 +273,8 @@ export const OverworldMaps = {
           talking: [
             {
               events: [
-                { type: "textMessage", text: "I'm a little busy kid...", faceHero: "postman" },
-                { type: "textMessage", text: "mail doesn't deliver itself!", faceHero: "postman" },
+                { type: "textMessage", text: "I'm a little busy kid...", faceHero: "postman", speaker: "postman" },
+                { type: "textMessage", text: "mail doesn't deliver itself!", faceHero: "postman", speaker: "postman" },
                 { type: "addStoryFlag", flag: "TALKED_TO_POSTMAN"},
                 { who: "toshi", type: "walk", direction: "down" },
                 { who: "toshi", type: "walk", direction: "down" },
@@ -397,6 +409,23 @@ export const OverworldMaps = {
         [utils.asGridCoord(6, 15)]: true,
       },
       cutsceneSpaces: {
+        // Opening call: one step left + one down from the start tile (4,3), in
+        // front of the door. Bridget phones, then the first objectives appear.
+        [utils.asGridCoord(3, 4)]: [{
+          disqualify: ["EP1_CALL_DONE"],
+          events: [
+            { type: "letterbox", on: true },
+            { type: "textMessage", text: "BUZZ!" },
+            { type: "textMessage", text: "BUZZ!" },
+            { type: "textMessage", text: "Brett: Hello?" },
+            { type: "textMessage", text: "Bridget: Brett! Have you seen Kenny? I need you both to head to my office immediately!" },
+            { type: "textMessage", text: "Brett: Sure thing, Ms. B! I'm headed over now!" },
+            { type: "textMessage", text: "Bridget: ... *click*" },
+            { type: "textMessage", text: "Brett: Bridget sounded more uptight than usual. I should get going. Hopefully Kenny is on his way!" },
+            { type: "letterbox", on: false },
+            { type: "addStoryFlag", flag: "EP1_CALL_DONE" },
+          ]
+        }],
         [utils.asGridCoord(3, 9)]: [{
           disqualify: ["POSTMAN_BLOCKED_EXIT"],
           // Non-blocking: the postman walks over on his own while Brett stays free
@@ -694,18 +723,26 @@ export const OverworldMaps = {
           src: "images/characters/object.png",
           talking: [
             {
+              // After the first chat: a quick sign-in that also saves the game.
               required: ["SIGN_IN"],
               events: [
-                { type: "textMessage", text: "Thanks for signing in!" },
+                { type: "textMessage", text: "Thanks for signing in!", speaker: "securityGuard" },
+                { type: "saveGame" },
               ]
             },
             {
+              // First chat with the guard: signs you in and answers about Kenny.
+              // No saving here (per design — the save happens on the re-talk).
               events: [
-                {
-                  type: "textMessage",
-                  text: "Please sign in before heading up the elevator.",
-                },
-                { type: "addStoryFlag", flag: "SIGN_IN"},
+                { type: "letterbox", on: true },
+                { type: "textMessage", text: "Security Guard: Hey Brett! Can you sign in real quick?" },
+                { type: "textMessage", text: "Brett: Hey Larry! Have you seen Kenny? Bridget's asking about him." },
+                { type: "textMessage", text: "Security Guard: Yeah, you just missed him. He went up already!" },
+                { type: "textMessage", text: "Brett: Oh great! Thanks!" },
+                { type: "textMessage", text: "Security Guard: No problem!" },
+                { type: "letterbox", on: false },
+                { type: "addStoryFlag", flag: "SIGN_IN" },
+                { type: "addStoryFlag", flag: "EP1_ASKED_SECURITY" },
               ]
             },
           ]
@@ -952,11 +989,11 @@ export const OverworldMaps = {
             { who: "hero", type: "walk", direction: "right" },
             { who: "hero", type: "stand", direction: "down", time: 1200 },
 
-            { type: "textMessage", text: "Brett?" },
+            { type: "textMessage", text: "Brett?", speaker: "kenny" },
             { who: "kenny", type: "stand", direction: "right" },
-            { type: "textMessage", text: "... ... ... ..." },
-            { type: "textMessage", text: "... ... ... ..." },
-            { type: "textMessage", text: "... ... ... ..." },
+            { type: "textMessage", text: "... ... ... ...", speaker: "kenny" },
+            { type: "textMessage", text: "... ... ... ...", speaker: "kenny" },
+            { type: "textMessage", text: "... ... ... ...", speaker: "kenny" },
             { who: "hero", type: "stand", direction: "left" },
             { type: "textMessage", text: "BRETT: Oh hey Kenny!" },
             { type: "textMessage", text: "BRETT: Heard anything about the new guy?" },
@@ -999,6 +1036,8 @@ export const OverworldMaps = {
             { who: "hero", type: "walk", direction: "down" },
             { who: "hero", type: "walk", direction: "down" },
             { type: "letterbox", on: false },
+            // Reached the 7th floor with Kenny -> "Find Kenny" objective complete.
+            { type: "addStoryFlag", flag: "EP1_REACHED_7F" },
             { type: "changeMap", map: "SeventhFloor"},
       ],
   },
