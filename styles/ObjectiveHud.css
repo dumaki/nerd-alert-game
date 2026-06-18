@@ -53,6 +53,11 @@
   opacity: 0.75;
 }
 
+.ObjectiveHud_count {
+  opacity: 0.85;
+  color: #ffd76a;
+}
+
 /* Newly active objectives slide in. */
 .ObjectiveHud_row--active {
   animation: objectiveIn 0.4s ease-out;

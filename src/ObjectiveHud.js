@@ -13,6 +13,7 @@ export class ObjectiveHud {
   constructor() {
     this.element = null;
     this.displayed = new Set(); // ids currently rendered as active
+    this.lastProgress = {};     // id -> progress text, to detect counter changes
     this.hasRows = false;       // is anything in the list right now
     this.heldVisible = false;   // Left Shift held
     this.autoVisible = false;   // temporary auto-reveal active
@@ -23,6 +24,18 @@ export class ObjectiveHud {
     return !!playerState.storyFlags[name];
   }
 
+  // A "[N of M remaining]" suffix for objectives that track countable items via
+  // numbered flags (e.g. EP1_FANNYPACK_1..5).
+  progressText(node) {
+    if (!node.progress) { return ""; }
+    const { total, flagPrefix } = node.progress;
+    let found = 0;
+    for (let i = 1; i <= total; i++) {
+      if (this.flag(`${flagPrefix}${i}`)) { found++; }
+    }
+    return ` <span class="ObjectiveHud_count">[${total - found} of ${total} remaining]</span>`;
+  }
+
   // Should this objective/child be visible right now (active, not yet done)?
   isActive(node, parent) {
     if (parent && this.flag(parent.complete)) { return false; }
@@ -31,7 +44,7 @@ export class ObjectiveHud {
 
   rowHtml(node, depth, state) {
     const optional = node.optional ? ` <span class="ObjectiveHud_opt">(optional)</span>` : "";
-    return `<li class="ObjectiveHud_row ObjectiveHud_row--d${depth} ObjectiveHud_row--${state}">${node.label}${optional}</li>`;
+    return `<li class="ObjectiveHud_row ObjectiveHud_row--d${depth} ObjectiveHud_row--${state}">${node.label}${optional}${this.progressText(node)}</li>`;
   }
 
   // Render all currently-active rows, plus any that just completed (`fading`)
@@ -83,25 +96,28 @@ export class ObjectiveHud {
 
   update() {
     const active = new Set();
+    const progress = {};
     Objectives.forEach(obj => {
-      if (this.isActive(obj)) { active.add(obj.id); }
+      if (this.isActive(obj)) { active.add(obj.id); progress[obj.id] = this.progressText(obj); }
       (obj.children || []).forEach(child => {
-        if (this.isActive(child, obj)) { active.add(child.id); }
+        if (this.isActive(child, obj)) { active.add(child.id); progress[child.id] = this.progressText(child); }
       });
     });
 
     const added = [...active].some(id => !this.displayed.has(id));
     const fading = new Set([...this.displayed].filter(id => !active.has(id)));
+    const countChanged = [...active].some(id => this.lastProgress[id] !== progress[id]);
 
     this.render(fading);
     this.displayed = active;
+    this.lastProgress = progress;
     this.applyVisibility();
 
-    // Reveal on change: longer for additions, just enough to play the cross-off
-    // fade (1.8s) when something only completed.
+    // Reveal on change: longer for additions, briefer for a cross-off (enough to
+    // play the 1.8s fade) or a counter tick.
     if (added) {
       this.revealTemporarily(5000);
-    } else if (fading.size > 0) {
+    } else if (fading.size > 0 || countChanged) {
       this.revealTemporarily(2200);
     }
   }

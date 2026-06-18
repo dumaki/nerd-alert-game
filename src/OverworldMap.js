@@ -112,11 +112,18 @@ export class OverworldMap {
   // and give the same scenario `disqualify: ["SOME_FLAG"]`. After it runs once the
   // flag is set, so it no longer qualifies. List more specific scenarios first; if
   // none qualify, nothing happens (returns undefined).
+  //   heroDirection: "up" | [..]  — only qualifies when the hero faces that way,
+  //                                  letting an NPC react to which side you approach.
   getRelevantScenario(scenarios) {
+    const heroDir = this.gameObjects.hero?.direction;
     return scenarios.find(scenario => {
       const meetsRequired = (scenario.required || []).every(sf => playerState.storyFlags[sf]);
       const isDisqualified = (scenario.disqualify || []).some(sf => playerState.storyFlags[sf]);
-      return meetsRequired && !isDisqualified;
+      const dirs = scenario.heroDirection
+        ? [].concat(scenario.heroDirection)
+        : null;
+      const dirOk = !dirs || dirs.includes(heroDir);
+      return meetsRequired && !isDisqualified && dirOk;
     });
   }
 
@@ -231,6 +238,117 @@ const seventhFloorMeetScenario = [{
     { type: "addStoryFlag", flag: "MET_AT_BRIDGET" },
   ]
 }];
+
+// --- Darius interactions on the 7th floor ----------------------------------
+// Names auto-resolve to chat-box portraits. The gather/disperse choreography is
+// shared between his "meet" scene and the side-quest scene; only the dialogue
+// and the flag they set differ.
+
+const dariusMeetDialogue = [
+  { type: "textMessage", text: "DARIUS: Well hey bud! What's your name?" },
+  { type: "textMessage", text: "TOSHI: ..." },
+  { type: "textMessage", text: "KENNY: Oh hey Darius, this is...uh Tamagotchi!" },
+  { type: "textMessage", text: "BRETT: I thought it was To--" },
+  { type: "textMessage", text: "DARIUS: Nice to meet you Teriyaki!" },
+  { type: "textMessage", text: "BRETT: But guys, seriously, its not...(sigh) Nevermind..." },
+];
+
+const dariusQuestDialogue = [
+  { type: "textMessage", text: "Darius: Oh, hey guys, you got a minute?" },
+  { type: "textMessage", text: "Kenny: We'd love to but--" },
+  { type: "textMessage", text: "Brett: Sure, whats up?" },
+  { type: "textMessage", text: "Kenny: *sigh*" },
+  { type: "textMessage", text: "Darius: I've misplaced a few of my fanny packs around the building. Since you guys are showing him around, think you can keep an eye out for me?" },
+  { type: "textMessage", text: "Toshi: ..." },
+  { type: "textMessage", text: "Brett: Sure, where'd you leave them?" },
+  { type: "textMessage", text: "Darius: I'm uh...not..." },
+  { type: "textMessage", text: "Kenny: How many did you lose?" },
+  { type: "textMessage", text: "Darius: Well lets see...one a day...for five years...carry the two..." },
+  { type: "textMessage", text: "Toshi: ..." },
+  { type: "textMessage", text: "Kenny: We can look for the ones you lost last week but thats all!" },
+  { type: "textMessage", text: "Darius: Ah shucks, I knew you cared hehe" },
+];
+
+// Kenny & Toshi pop out of Brett and gather; Darius turns to face the player.
+// `dir` is the hero's facing: "up" (approached from behind), "right" (from his
+// left), or "left" (from his right).
+function dariusGather(dir) {
+  if (dir === "up") {
+    return [
+      { type: "setHeroSprite", characterId: "s001" },
+      { type: "letterbox", on: true },
+      { type: "showObject", who: "toshi", atHero: true },
+      { who: "toshi", type: "walk", direction: "left" },
+      { type: "showObject", who: "kenny", atHero: true },
+      { who: "kenny", type: "walk", direction: "right" },
+      { who: "darius", type: "stand", direction: "down" },
+    ];
+  }
+  // Side approach: line the gang up below; Darius faces back toward the hero.
+  const dariusFace = dir === "right" ? "left" : "right";
+  return [
+    { type: "setHeroSprite", characterId: "s001" },
+    { type: "letterbox", on: true },
+    { type: "showObject", who: "kenny", atHero: true },
+    { who: "kenny", type: "walk", direction: "down" },
+    { who: "kenny", type: "walk", direction: "down" },
+    { type: "showObject", who: "toshi", atHero: true },
+    { who: "toshi", type: "walk", direction: "down" },
+    { who: "darius", type: "stand", direction: dariusFace },
+  ];
+}
+
+// Kenny & Toshi merge back into Brett; Darius turns back up toward his desk.
+function dariusDisperse(dir) {
+  const toshiFace = dir === "up" ? "right" : "up";
+  const kennyFace = dir === "up" ? "left" : "up";
+  return [
+    { who: "toshi", type: "stand", direction: toshiFace, time: 200 },
+    { type: "hideObject", who: "toshi" },
+    { who: "kenny", type: "stand", direction: kennyFace, time: 200 },
+    { type: "hideObject", who: "kenny" },
+    { type: "restoreHeroSprite" },
+    { who: "darius", type: "stand", direction: "up" },
+    { type: "letterbox", on: false },
+  ];
+}
+
+const DARIUS_DIRS = ["up", "right", "left"];
+
+// Build Darius's talking list:
+//  1st chat  -> meet (greets Toshi), sets EP1_MET_DARIUS
+//  2nd chat  -> gives the fanny-pack side quest, sets EP1_FANNYPACK_QUEST
+//  3rd+ chat -> a reminder, no movement, no turning
+const dariusTalking = [
+  ...DARIUS_DIRS.map(dir => ({
+    required: ["EP1_MET_TOSHI"],
+    disqualify: ["EP1_MET_DARIUS"],
+    heroDirection: dir,
+    events: [
+      ...dariusGather(dir),
+      ...dariusMeetDialogue,
+      ...dariusDisperse(dir),
+      { type: "addStoryFlag", flag: "EP1_MET_DARIUS" },
+    ],
+  })),
+  ...DARIUS_DIRS.map(dir => ({
+    required: ["EP1_MET_DARIUS"],
+    disqualify: ["EP1_FANNYPACK_QUEST"],
+    heroDirection: dir,
+    events: [
+      ...dariusGather(dir),
+      ...dariusQuestDialogue,
+      ...dariusDisperse(dir),
+      { type: "addStoryFlag", flag: "EP1_FANNYPACK_QUEST" },
+    ],
+  })),
+  {
+    required: ["EP1_FANNYPACK_QUEST"],
+    events: [
+      { type: "textMessage", text: "Darius: Did you find them yet?" },
+    ],
+  },
+];
 
 export const OverworldMaps = {
     BackLotHallway: {
@@ -1068,6 +1186,17 @@ export const OverworldMaps = {
         x: utils.withGrid(54),
         y: utils.withGrid(16),
         src: "images/characters/people/Bridget.png",
+      }),
+      // Darius stands in front of the middle (3rd-from-left) desk facing up. Talk
+      // to him from behind (below) or either side; Kenny & Toshi pop out of Brett
+      // to gather, Darius greets them, then they merge back in. Fires once from
+      // whichever of the 3 tiles you approach (all share disqualify EP1_MET_DARIUS).
+      darius: new Person({
+        x: utils.withGrid(18),
+        y: utils.withGrid(19),
+        direction: "up",
+        src: "images/characters/people/Darius.png",
+        talking: dariusTalking,
       }),
     },
     walls: {

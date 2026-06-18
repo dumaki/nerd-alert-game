@@ -121,6 +121,13 @@ export class OverworldEvent {
       // Clear any wall the object currently holds before relocating, so moving an
       // already-visible object (e.g. snapping the hero) leaves no phantom wall.
       this.map.removeWall(who.x, who.y);
+      // atHero pops the object out onto the hero's tile (e.g. a party member
+      // emerging from the leader), which keeps cutscenes position-independent.
+      if (this.event.atHero) {
+        const hero = this.map.gameObjects.hero;
+        who.x = hero.x;
+        who.y = hero.y;
+      }
       if (this.event.x !== undefined) { who.x = utils.withGrid(this.event.x); }
       if (this.event.y !== undefined) { who.y = utils.withGrid(this.event.y); }
       if (this.event.direction) { who.direction = this.event.direction; }

@@ -106,5 +106,13 @@ export const Characters = {
     src: "images/characters/people/securityguard001.png",
     icon: "images/icons/chill.png",
     actions: [ "damage1" ],
+  },
+  "darius": {
+    name: "Darius",
+    description: "A coworker on the 7th floor.",
+    type: CharacterTypes.chill,
+    src: "images/characters/people/darius001.png",
+    icon: "images/icons/chill.png",
+    actions: [ "damage1" ],
   }
 }

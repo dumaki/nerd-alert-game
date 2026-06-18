@@ -58,4 +58,14 @@ export const Objectives = [
     show: "EP1_MET_TOSHI",
     complete: "EP1_GOT_BADGE",
   },
+  {
+    // Darius's side quest. The label gets a live "[N of M remaining]" counter,
+    // computed from how many EP1_FANNYPACK_1..5 flags are set.
+    id: "fannyPacks",
+    label: "Find Darius' Missing Fanny Packs",
+    optional: true,
+    show: "EP1_FANNYPACK_QUEST",
+    complete: "EP1_FANNYPACK_DONE",
+    progress: { total: 5, flagPrefix: "EP1_FANNYPACK_" },
+  },
 ];
