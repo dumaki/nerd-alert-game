@@ -13,8 +13,12 @@ export class OverworldMap {
     this.lowerImage = new Image();
     this.lowerImage.src = config.lowerSrc;
 
-    this.upperImage = new Image();
-    this.upperImage.src = config.upperSrc;
+    // Upper (over-the-player) layer is optional — small rooms may only have a
+    // lower image.
+    if (config.upperSrc) {
+      this.upperImage = new Image();
+      this.upperImage.src = config.upperSrc;
+    }
 
     this.isCutscenePlaying = false;
     this.isPaused = false;
@@ -29,6 +33,7 @@ export class OverworldMap {
   }
 
   drawUpperImage(ctx, cameraPerson) {
+    if (!this.upperImage) { return; }
     ctx.drawImage(
       this.upperImage,
       utils.cameraOffsetX(ctx.canvas) - cameraPerson.x,
@@ -1198,6 +1203,22 @@ export const OverworldMaps = {
         src: "images/characters/people/Darius.png",
         talking: dariusTalking,
       }),
+      // The Build Room door — a "closed door" on the bottom wall of the beige
+      // office band at (11,13). Stand below at (11,14), face up, Enter to teleport
+      // in; crosses off that tour objective.
+      buildRoomDoor: new Person({
+        x: utils.withGrid(11),
+        y: utils.withGrid(13),
+        src: "images/characters/object.png",
+        talking: [
+          {
+            events: [
+              { type: "changeMap", map: "BuildRoom", x: 1, y: 7, direction: "up" },
+              { type: "addStoryFlag", flag: "EP1_BUILDROOM" },
+            ]
+          }
+        ]
+      }),
     },
     walls: {
         //Top Wall
@@ -1547,5 +1568,51 @@ export const OverworldMaps = {
       [utils.asGridCoord(16, 16)]: seventhFloorMeetScenario,
       [utils.asGridCoord(16, 17)]: seventhFloorMeetScenario,
     },
-  }
+  },
+
+  // Small 9x9 side room off the 7th floor (lower layer only). Entered/exited
+  // through matching "closed doors": Enter on the 7th-floor door teleports here
+  // (arriving at the bottom, facing up); Enter on the exit door sends you back in
+  // front of the 7th-floor door. Interior collision (header height, the desk) is
+  // a best-guess to tune once the room is furnished.
+  BuildRoom: {
+    lowerSrc: "images/maps/BuildroomLower.png",
+    gameObjects: {
+      hero: new Person({
+        isPlayerControlled: true,
+        x: utils.withGrid(1),
+        y: utils.withGrid(7),
+      }),
+      exitDoor: new Person({
+        x: utils.withGrid(1),
+        y: utils.withGrid(8),
+        src: "images/characters/object.png",
+        talking: [
+          {
+            events: [
+              { type: "changeMap", map: "SeventhFloor", x: 11, y: 14, direction: "down" },
+            ]
+          }
+        ]
+      }),
+    },
+    walls: {
+      // Top + bottom walls (floor spans x = 0..8).
+      [utils.asGridCoord(0,0)]: true, [utils.asGridCoord(1,0)]: true, [utils.asGridCoord(2,0)]: true,
+      [utils.asGridCoord(3,0)]: true, [utils.asGridCoord(4,0)]: true, [utils.asGridCoord(5,0)]: true,
+      [utils.asGridCoord(6,0)]: true, [utils.asGridCoord(7,0)]: true, [utils.asGridCoord(8,0)]: true,
+      [utils.asGridCoord(0,8)]: true, [utils.asGridCoord(1,8)]: true, [utils.asGridCoord(2,8)]: true,
+      [utils.asGridCoord(3,8)]: true, [utils.asGridCoord(4,8)]: true, [utils.asGridCoord(5,8)]: true,
+      [utils.asGridCoord(6,8)]: true, [utils.asGridCoord(7,8)]: true, [utils.asGridCoord(8,8)]: true,
+      // Side walls just outside the floor (x=-1 / x=9) so the full width is usable.
+      [utils.asGridCoord(-1,0)]: true, [utils.asGridCoord(-1,1)]: true, [utils.asGridCoord(-1,2)]: true,
+      [utils.asGridCoord(-1,3)]: true, [utils.asGridCoord(-1,4)]: true, [utils.asGridCoord(-1,5)]: true,
+      [utils.asGridCoord(-1,6)]: true, [utils.asGridCoord(-1,7)]: true, [utils.asGridCoord(-1,8)]: true,
+      [utils.asGridCoord(9,0)]: true, [utils.asGridCoord(9,1)]: true, [utils.asGridCoord(9,2)]: true,
+      [utils.asGridCoord(9,3)]: true, [utils.asGridCoord(9,4)]: true, [utils.asGridCoord(9,5)]: true,
+      [utils.asGridCoord(9,6)]: true, [utils.asGridCoord(9,7)]: true, [utils.asGridCoord(9,8)]: true,
+      // Table + trash can collision.
+      [utils.asGridCoord(2,7)]: true, [utils.asGridCoord(3,7)]: true, [utils.asGridCoord(4,7)]: true,
+    },
+  },
 }

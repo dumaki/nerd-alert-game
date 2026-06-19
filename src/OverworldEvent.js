@@ -193,7 +193,20 @@ export class OverworldEvent {
 
     const sceneTransition = new SceneTransition();
     sceneTransition.init(document.querySelector(".game-container"), () => {
-      this.map.overworld.startMap( OverworldMaps[this.event.map], this.event.map );
+      const overworld = this.map.overworld;
+      overworld.startMap( OverworldMaps[this.event.map], this.event.map );
+
+      // Optional arrival tile/direction — used by door teleports so you land in
+      // front of the matching door instead of the map's default spawn.
+      if (this.event.x !== undefined || this.event.y !== undefined) {
+        const hero = overworld.map.gameObjects.hero;
+        overworld.map.removeWall(hero.x, hero.y);
+        if (this.event.x !== undefined) { hero.x = utils.withGrid(this.event.x); }
+        if (this.event.y !== undefined) { hero.y = utils.withGrid(this.event.y); }
+        if (this.event.direction) { hero.direction = this.event.direction; }
+        overworld.map.addWall(hero.x, hero.y);
+      }
+
       resolve();
 
       sceneTransition.fadeOut();
